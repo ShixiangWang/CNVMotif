@@ -2,18 +2,18 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 pairScoreVector <- function(x, y, x_max, y_max) {
-    .Call('_sigminer_helper_pairScoreVector', PACKAGE = 'sigminer.helper', x, y, x_max, y_max)
+    .Call(`_sigminer_helper_pairScoreVector`, x, y, x_max, y_max)
 }
 
 pairScoreMatrix <- function(x, y, x_max, y_max) {
-    .Call('_sigminer_helper_pairScoreMatrix', PACKAGE = 'sigminer.helper', x, y, x_max, y_max)
+    .Call(`_sigminer_helper_pairScoreMatrix`, x, y, x_max, y_max)
 }
 
 getScoreMatrix <- function(indexMat, subMat, bSize, verbose) {
-    .Call('_sigminer_helper_getScoreMatrix', PACKAGE = 'sigminer.helper', indexMat, subMat, bSize, verbose)
+    .Call(`_sigminer_helper_getScoreMatrix`, indexMat, subMat, bSize, verbose)
 }
 
 getScoreMatrixRect <- function(indexMat1, indexMat2, subMat, verbose) {
-    .Call('_sigminer_helper_getScoreMatrixRect', PACKAGE = 'sigminer.helper', indexMat1, indexMat2, subMat, verbose)
+    .Call(`_sigminer_helper_getScoreMatrixRect`, indexMat1, indexMat2, subMat, verbose)
 }
 

@@ -1,4 +1,19 @@
-extract_seq_dt <- function(x) {
+#' Coding Copy Number Segments with Letters.
+#'
+#' Letters are grouped as short (<50kb), mid (<500kb), long (<5Mb),
+#' long (or extreme) long (>5Mb) segments.
+#' - A B C D for copy number 0.
+#' - E F G H for copy number 1.
+#' - I J K L for copy number 2.
+#' - M N O P for copy number 3.
+#' - Q R S T for copy number 4.
+#' - U V W X for copy number 5+.
+#'
+#' @param x a `CopyNumber` object or a `data.frame`.
+#'
+#' @return a `data.table`.
+#' @export
+sh_code_segs <- function(x) {
   if (inherits(x, "CopyNumber")) {
     x <- x@data
   } else {
@@ -10,24 +25,29 @@ extract_seq_dt <- function(x) {
     segVal = ifelse(segVal > 5, 5, segVal) %>% as.integer() ## Set max value
   )]
   x[, lenVal := cut(lenVal,
-    breaks = c(-Inf, 5e4, 5e5, 5e6, Inf),
-    labels = c("1", "2", "3", "4"),
-    right = FALSE
+                    breaks = c(-Inf, 5e4, 5e5, 5e6, Inf),
+                    labels = c("1", "2", "3", "4"),
+                    right = FALSE
   ) %>% as.integer()]
 
   x[, ID := paste(sample, chromosome, sep = "-")]
   x
 }
 
-## 4 letters as a group for short, mid, long, long long segments
-# A B C D for copy number 0
-# E F G H for copy number 1
-# I J K L for copy number 2
-# M N O P for copy number 3
-# Q R S T for copy number 4
-# U V W X for copy number 5+
-
-build_sub_matrix <- function(max_len_score = 8L) {
+#' Build a Substitution Matrix
+#'
+#' @param max_len_score the maximum score for segment length (should >=4).
+#' Default is 8 for balancing the weights between segment length and copy number
+#' value. The maximum score for copy number value is 6.
+#'
+#' @return a `list`.
+#' @export
+#'
+#' @examples
+#' sub_list <- sh_build_sub_matrix
+#' @testexamples
+#' expect_is(sub_list, "list")
+sh_build_sub_matrix <- function(max_len_score = 8L) {
   stopifnot(max_len_score >= 4)
 
   l <- 1:4
@@ -96,7 +116,7 @@ score_pairwise_strings <- function(x, y, sub_mat) {
     sum()
 }
 
-get_score_matrix <- function(x, sub_mat, method = c("base", "ff", "bigmemory"), verbose = FALSE) {
+sh_get_score_matrix2 <- function(x, sub_mat, method = c("base", "ff", "bigmemory"), verbose = FALSE) {
   method <- match.arg(method)
   n <- length(x)
 
@@ -130,8 +150,7 @@ get_score_matrix <- function(x, sub_mat, method = c("base", "ff", "bigmemory"), 
   return(mat)
 }
 
-get_score_matrix2 <- function(x, sub_mat, block_size = NULL, verbose = FALSE, cores = 1L,
-                              parallel_method = c("doParallel", "doFuture")) {
+sh_get_score_matrix <- function(x, sub_mat, block_size = NULL, verbose = FALSE, cores = 1L) {
   stopifnot(is.numeric(cores))
 
   if (anyNA(sub_mat)) {
@@ -170,7 +189,7 @@ get_score_matrix2 <- function(x, sub_mat, block_size = NULL, verbose = FALSE, co
       colnames(y) <- rownames(y) <- paste0("block", seq_len(nrow(y)))
     }
   } else {
-    parallel_method <- match.arg(parallel_method)
+
     if (block_size > 1) {
       stop("In parallel mode, 'block_size' can only be one!")
     }
@@ -186,26 +205,19 @@ get_score_matrix2 <- function(x, sub_mat, block_size = NULL, verbose = FALSE, co
     ngrp <- ceiling(nrow(m) / 1000)
     grp_list <- chunk2(seq_len(nrow(m)), ngrp)
 
-    # y <- matrix(NA_integer_, ncol = nrow(m), nrow = nrow(m))
+    if (!requireNamespace("foreach", quietly = TRUE)) {
+      stop("Package 'doParallel' is required to go through this parallel method.")
+    }
 
-    if (parallel_method == "doFuture") {
-      if (!requireNamespace("doParallel", quietly = TRUE)) {
-        stop("Package 'doFuture' is required to go through this parallel method.")
-      }
+    if (!requireNamespace("doParallel", quietly = TRUE)) {
+      stop("Package 'doParallel' is required to go through this parallel method.")
+    }
 
-      doFuture::registerDoFuture()
-      future::plan("multiprocess", workers = cores)
+    if (Sys.info()[["sysname"]] == "Windows") {
+      cl <- parallel::makeCluster(cores)
+      doParallel::registerDoParallel(cl)
     } else {
-      if (!requireNamespace("doParallel", quietly = TRUE)) {
-        stop("Package 'doParallel' is required to go through this parallel method.")
-      }
-
-      if (Sys.info()[["sysname"]] == "Windows") {
-        cl <- parallel::makeCluster(cores)
-        doParallel::registerDoParallel(cl)
-      } else {
-        doParallel::registerDoParallel(cores = cores)
-      }
+      doParallel::registerDoParallel(cores = cores)
     }
 
     y <- foreach(
@@ -267,11 +279,7 @@ show_seq_logo <- function(x, method = c("prob", "bits"), ncol = NULL, nrow = NUL
                           recode = FALSE, indicator = NULL, ...) {
   method <- match.arg(method)
 
-  if (!requireNamespace("ggseqlogo", quietly = TRUE)) {
-    stop("Package 'ggseqlogo' is required, please install it firstly!")
-  }
-
-  ## copy from utils.R
+  ## copy from sigminer utils.R
   reds <- sapply(list(c(252, 138, 106), c(241, 68, 50), c(188, 25, 26)),
     FUN = function(x) rgb2hex(x[1], x[2], x[3])
   ) %>% as.character()

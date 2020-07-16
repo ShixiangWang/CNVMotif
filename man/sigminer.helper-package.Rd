@@ -6,16 +6,8 @@
 \alias{sigminer.helper-package}
 \title{sigminer.helper: Extra Functionality for Package 'sigminer'}
 \description{
-Genomic alterations including single nucleotide
-    substitution, copy number alteration, etc. are the major force for
-    cancer initialization and development. Due to the specificity of
-    molecular lesions caused by genomic alterations, we can generate
-    characteristic alteration spectra, called 'signature' (Wang, Shixiang,
-    et al.  (2020) <DOI:10.1101/2020.04.27.20082404> & Alexandrov, Ludmil
-    B., et al. (2020) <DOI:10.1038/s41586-020-1943-3> & Macintyre, Geoff,
-    et al. (2018) <DOI:10.1038/s41588-018-0179-8>).  This package helps
-    users to extract, analyze and visualize signatures from genomic
-    alteration records, thus providing new insight into cancer study.
+Provides extra operation, analysis and
+    visualization functionality for R package 'sigminer'.
 }
 \author{
 \strong{Maintainer}: Shixiang Wang \email{w_shixiang@163.com} (\href{https://orcid.org/0000-0001-9855-7357}{ORCID})

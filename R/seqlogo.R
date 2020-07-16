@@ -50,6 +50,26 @@ logo_data2 <- function(seqs, idor = NULL, method = "bits", stack_width = 0.95, r
 }
 
 
+#' @inherit ggseqlogo::ggseqlogo
+#' @inheritParams geom_logo2
+#' @examples
+#' library(ggseqlogo)
+#' data(ggseqlogo_sample)
+#'
+#' ## Same as ggseqlogo()
+#' p1 <- ggseqlogo2(seqs_dna[[1]])
+#' p1
+#'
+#' ## Extra feature
+#' idor <- as.character(1:4)
+#' names(idor) <- c("A","C","G","T")
+#' p2 <- ggseqlogo2(seqs_dna[[1]], idor = idor)
+#' p2
+#'
+#' @testexamples
+#' expect_is(p1, "ggplot")
+#' expect_is(p2, "ggplot")
+#' @export
 ggseqlogo2 <- function(data, facet = "wrap", scales = "free_x", ncol = NULL,
                        nrow = NULL, idor = NULL, ...) {
   p <- ggplot() +
@@ -76,10 +96,14 @@ ggseqlogo2 <- function(data, facet = "wrap", scales = "free_x", ncol = NULL,
   return(p)
 }
 
+#' @inherit ggseqlogo::geom_logo
+#' @param idor a named vector (like a dictory) to change letters one to one in the plot.
+#' @rdname ggseqlogo2
+#' @export
 geom_logo2 <- function(data = NULL, method = "bits", seq_type = "auto", namespace = NULL,
                        font = "roboto_medium", stack_width = 0.95, rev_stack_order = F,
                        col_scheme = "auto", low_col = "black", high_col = "yellow",
-                       na_col = "grey20", plot = T, idor = NULL, ...) {
+                       na_col = "grey20", plot = TRUE, idor = NULL, ...) {
   if (!"ggseqlogo" %in% .packages()) {
     attachNamespace("ggseqlogo")
   }
