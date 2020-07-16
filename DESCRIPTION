@@ -22,7 +22,8 @@ Suggests:
     bigmemory,
     ff,
     foreach,
-    doParallel
+    doParallel,
+    covr
 LinkingTo: 
     Rcpp
 Encoding: UTF-8
