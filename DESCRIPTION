@@ -1,16 +1,36 @@
 Package: sigminer.helper
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Extra Functionality for Package 'sigminer'
+Version: 0.1.0
+Date: 2020-07-16
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Shixiang",
+           family = "Wang",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+           email = "w_shixiang@163.com",
+           comment = c(ORCID = "0000-0001-9855-7357"))
+Description: Genomic alterations including single nucleotide
+    substitution, copy number alteration, etc. are the major force for
+    cancer initialization and development. Due to the specificity of
+    molecular lesions caused by genomic alterations, we can generate
+    characteristic alteration spectra, called 'signature' (Wang, Shixiang,
+    et al.  (2020) <DOI:10.1101/2020.04.27.20082404> & Alexandrov, Ludmil
+    B., et al. (2020) <DOI:10.1038/s41586-020-1943-3> & Macintyre, Geoff,
+    et al. (2018) <DOI:10.1038/s41588-018-0179-8>).  This package helps
+    users to extract, analyze and visualize signatures from genomic
+    alteration records, thus providing new insight into cancer study.
+License: MIT + file LICENSE
+Imports: 
+    data.table,
+    ggplot2,
+    ggseqlogo,
+    Rcpp,
+    magrittr
+LinkingTo: 
+    Rcpp
 Encoding: UTF-8
 LazyData: true
-Roxygen: list(markdown = TRUE)
+Roxygen: list(markdown = TRUE, roclets = c("collate",
+    "namespace", "rd", "roxytest::testthat_roclet"))
 RoxygenNote: 7.1.1
+Suggests: 
+    testthat
