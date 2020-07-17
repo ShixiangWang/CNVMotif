@@ -9,7 +9,7 @@ test_that("Function sh_build_sub_matrix() @ L71", {
 })
 
 
-test_that("Function sh_get_score_matrix() @ L200", {
+test_that("Function sh_get_score_matrix() @ L205", {
   
   load(system.file("extdata", "toy_segTab.RData",
     package = "sigminer.helper", mustWork = TRUE
@@ -23,6 +23,9 @@ test_that("Function sh_get_score_matrix() @ L200", {
   
   mat2 <- sh_get_score_matrix2(seqs$keep, x$mat)
   identical(mat, mat2)
+  
+  mat3 <- sh_get_score_matrix(seqs$keep, x$mat, dislike = TRUE)
+  identical(mat3, 240L - mat)
   
   mat_b <- sh_get_score_matrix(seqs$keep, x$mat, block_size = 2L)
   ## block1 represents the first 2 sequences
@@ -45,17 +48,19 @@ test_that("Function sh_get_score_matrix() @ L200", {
   
     all.equal(y1, y2)
   }
+  
   expect_is(x, "list")
   expect_is(seqs, "list")
   expect_is(mat, "matrix")
   expect_equal(mat, mat2)
+  expect_equal(mat3, 240L - mat)
   if (require("doParallel")) {
     expect_equal(y1, y2)
   }
 })
 
 
-test_that("Function show_seq_shape() @ L363", {
+test_that("Function show_seq_shape() @ L368", {
   
   p <- show_seq_shape(c("ADGHK"))
   p
@@ -63,7 +68,7 @@ test_that("Function show_seq_shape() @ L363", {
 })
 
 
-test_that("Function show_seq_logo() @ L416", {
+test_that("Function show_seq_logo() @ L421", {
   
   p1 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")))
   p1

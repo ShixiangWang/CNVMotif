@@ -168,12 +168,15 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, return_dt = FALSE) {
 #' mat2 <- sh_get_score_matrix2(seqs$keep, x$mat)
 #' identical(mat, mat2)
 #'
+#' mat3 <- sh_get_score_matrix(seqs$keep, x$mat, dislike = TRUE)
+#' identical(mat3, 240L - mat)
+#'
 #' mat_b <- sh_get_score_matrix(seqs$keep, x$mat, block_size = 2L)
 #' ## block1 represents the first 2 sequences
 #' ## block2 represents the 3rd, 4th sequences
 #' ## ...
 #' mat_b[1:5, 1:5]
-#'
+#' \donttest{
 #' if (require("doParallel")) {
 #'   mock_seqs <- sapply(1:10000, function(x) {
 #'     paste(sample(LETTERS[1:24], 5, replace = TRUE), collapse = "")
@@ -189,11 +192,13 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, return_dt = FALSE) {
 #'
 #'   all.equal(y1, y2)
 #' }
+#' }
 #' @testexamples
 #' expect_is(x, "list")
 #' expect_is(seqs, "list")
 #' expect_is(mat, "matrix")
 #' expect_equal(mat, mat2)
+#' expect_equal(mat3, 240L - mat)
 #' if (require("doParallel")) {
 #'   expect_equal(y1, y2)
 #' }
@@ -276,7 +281,7 @@ sh_get_score_matrix <- function(x, sub_mat, block_size = NULL, dislike = FALSE,
       i = seq_along(grp_list),
       .combine = "cbind",
       .packages = "sigminer.helper",
-      #.export = c("m", "grp_list", "sub_mat", "verbose", "getScoreMatrixRect"),
+      # .export = c("m", "grp_list", "sub_mat", "verbose", "getScoreMatrixRect"),
       .export = c("getScoreMatrixRect"),
       .verbose = FALSE
     ) %dopar% {
