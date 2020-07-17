@@ -46,10 +46,11 @@ NumericMatrix pairScoreMatrix(NumericMatrix x, NumericMatrix y, int x_max, int y
 }
 
 // [[Rcpp::export]]
-IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int bSize, bool verbose) {
+IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int bSize, bool like, bool verbose) {
   // indexMat: each row represent the index in subMat (0-based)
   // subMat: a matrix stores match score
   // bSize: block size to aggregrate
+  // like: if false, return dissimilarity
   int n = indexMat.nrow(), size = indexMat.ncol();
   int score = 0;
 
@@ -69,9 +70,15 @@ IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int b
           // }
           score += subMat(indexMat(i, k), indexMat(j, k));
         }
-        out(i, j) = score;
+
+        if (like) {
+          out(i, j) = score;
+        } else {
+          out(i, j) = subMat(0, 0) * size - score;
+        }
+
         if (i != j) {
-          out(j, i) = score;
+          out(j, i) = out(i, j);
         }
       }
     }
@@ -110,9 +117,13 @@ IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int b
         }
 
         // Calculate the mean
-        out(ii, jj) = std::round(blockScore / float(eCounter));
+        if (like) {
+          out(ii, jj) = std::round(blockScore / float(eCounter));
+        } else {
+          out(ii, jj) = subMat(0, 0) * size - std::round(blockScore / float(eCounter));
+        }
         if (ii != jj) {
-          out(jj, ii) = std::round(blockScore / float(eCounter));
+          out(jj, ii) = out(ii, jj);
         }
       }
     }
@@ -122,7 +133,7 @@ IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int b
 }
 
 // [[Rcpp::export]]
-IntegerMatrix getScoreMatrixRect(IntegerMatrix indexMat1, IntegerMatrix indexMat2, IntegerMatrix subMat, bool verbose) {
+IntegerMatrix getScoreMatrixRect(IntegerMatrix indexMat1, IntegerMatrix indexMat2, IntegerMatrix subMat, bool like, bool verbose) {
   // For not equal matrices, indexMat1 should be a bigger matrix than indexMat2
   // indexMat: each row represent the index in subMat (0-based)
   // subMat: a matrix stores match score
@@ -140,7 +151,11 @@ IntegerMatrix getScoreMatrixRect(IntegerMatrix indexMat1, IntegerMatrix indexMat
       for (int k = 0; k < size; k++) {
         score += subMat(indexMat1(i, k), indexMat2(j, k));
       }
-      out(i, j) = score;
+      if (like) {
+        out(i, j) = score;
+      } else {
+        out(i, j) = subMat(0, 0) * size - score;
+      }
     }
   }
 

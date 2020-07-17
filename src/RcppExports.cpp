@@ -34,30 +34,32 @@ BEGIN_RCPP
 END_RCPP
 }
 // getScoreMatrix
-IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int bSize, bool verbose);
-RcppExport SEXP _sigminer_helper_getScoreMatrix(SEXP indexMatSEXP, SEXP subMatSEXP, SEXP bSizeSEXP, SEXP verboseSEXP) {
+IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int bSize, bool like, bool verbose);
+RcppExport SEXP _sigminer_helper_getScoreMatrix(SEXP indexMatSEXP, SEXP subMatSEXP, SEXP bSizeSEXP, SEXP likeSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerMatrix >::type indexMat(indexMatSEXP);
     Rcpp::traits::input_parameter< IntegerMatrix >::type subMat(subMatSEXP);
     Rcpp::traits::input_parameter< int >::type bSize(bSizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type like(likeSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(getScoreMatrix(indexMat, subMat, bSize, verbose));
+    rcpp_result_gen = Rcpp::wrap(getScoreMatrix(indexMat, subMat, bSize, like, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
 // getScoreMatrixRect
-IntegerMatrix getScoreMatrixRect(IntegerMatrix indexMat1, IntegerMatrix indexMat2, IntegerMatrix subMat, bool verbose);
-RcppExport SEXP _sigminer_helper_getScoreMatrixRect(SEXP indexMat1SEXP, SEXP indexMat2SEXP, SEXP subMatSEXP, SEXP verboseSEXP) {
+IntegerMatrix getScoreMatrixRect(IntegerMatrix indexMat1, IntegerMatrix indexMat2, IntegerMatrix subMat, bool like, bool verbose);
+RcppExport SEXP _sigminer_helper_getScoreMatrixRect(SEXP indexMat1SEXP, SEXP indexMat2SEXP, SEXP subMatSEXP, SEXP likeSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerMatrix >::type indexMat1(indexMat1SEXP);
     Rcpp::traits::input_parameter< IntegerMatrix >::type indexMat2(indexMat2SEXP);
     Rcpp::traits::input_parameter< IntegerMatrix >::type subMat(subMatSEXP);
+    Rcpp::traits::input_parameter< bool >::type like(likeSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(getScoreMatrixRect(indexMat1, indexMat2, subMat, verbose));
+    rcpp_result_gen = Rcpp::wrap(getScoreMatrixRect(indexMat1, indexMat2, subMat, like, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -65,8 +67,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_sigminer_helper_pairScoreVector", (DL_FUNC) &_sigminer_helper_pairScoreVector, 4},
     {"_sigminer_helper_pairScoreMatrix", (DL_FUNC) &_sigminer_helper_pairScoreMatrix, 4},
-    {"_sigminer_helper_getScoreMatrix", (DL_FUNC) &_sigminer_helper_getScoreMatrix, 4},
-    {"_sigminer_helper_getScoreMatrixRect", (DL_FUNC) &_sigminer_helper_getScoreMatrixRect, 4},
+    {"_sigminer_helper_getScoreMatrix", (DL_FUNC) &_sigminer_helper_getScoreMatrix, 5},
+    {"_sigminer_helper_getScoreMatrixRect", (DL_FUNC) &_sigminer_helper_getScoreMatrixRect, 5},
     {NULL, NULL, 0}
 };
 

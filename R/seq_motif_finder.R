@@ -146,6 +146,7 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, return_dt = FALSE) {
 #' @param block_size a block size to aggregrate, this is designed for big data, it means
 #' results from adjacent sequences will be aggregrate by means to reduce the size of result
 #' matrix.
+#' @param dislike if `TRUE`, returns a dissimilarity matrix instead of a similarity matrix.
 #' @param verbose if `TRUE`, print extra message, note it will slower the computation.
 #' @param cores computer cores, default is `1`, note it is super fast already, set more
 #' cores typically do not speed up the computation.
@@ -196,7 +197,8 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, return_dt = FALSE) {
 #' if (require("doParallel")) {
 #'   expect_equal(y1, y2)
 #' }
-sh_get_score_matrix <- function(x, sub_mat, block_size = NULL, verbose = FALSE, cores = 1L) {
+sh_get_score_matrix <- function(x, sub_mat, block_size = NULL, dislike = FALSE,
+                                cores = 1L, verbose = FALSE) {
   stopifnot(is.numeric(cores))
 
   if (anyNA(sub_mat)) {
@@ -227,7 +229,7 @@ sh_get_score_matrix <- function(x, sub_mat, block_size = NULL, verbose = FALSE, 
   }
 
   if (cores == 1) {
-    y <- getScoreMatrix(m, sub_mat, block_size, verbose)
+    y <- getScoreMatrix(m, sub_mat, block_size, !dislike, verbose)
 
     if (block_size == 1) {
       colnames(y) <- rownames(y) <- x
@@ -251,7 +253,11 @@ sh_get_score_matrix <- function(x, sub_mat, block_size = NULL, verbose = FALSE, 
     grp_list <- chunk2(seq_len(nrow(m)), ngrp)
 
     if (!requireNamespace("foreach", quietly = TRUE)) {
-      stop("Package 'doParallel' is required to go through this parallel method.")
+      stop("Package 'foreach' is required to go through this parallel method.")
+    }
+
+    if (!"foreach" %in% .packages()) {
+      attachNamespace("foreach")
     }
 
     if (!requireNamespace("doParallel", quietly = TRUE)) {
@@ -261,18 +267,20 @@ sh_get_score_matrix <- function(x, sub_mat, block_size = NULL, verbose = FALSE, 
     if (Sys.info()[["sysname"]] == "Windows") {
       cl <- parallel::makeCluster(cores)
       doParallel::registerDoParallel(cl)
+      on.exit(parallel::stopCluster(cl))
     } else {
       doParallel::registerDoParallel(cores = cores)
     }
 
-    y <- foreach(
+    y <- foreach::foreach(
       i = seq_along(grp_list),
       .combine = "cbind",
       .packages = "sigminer.helper",
-      .export = c("m", "grp_list", "sub_mat", "verbose", "getScoreMatrixRect"),
+      #.export = c("m", "grp_list", "sub_mat", "verbose", "getScoreMatrixRect"),
+      .export = c("getScoreMatrixRect"),
       .verbose = FALSE
     ) %dopar% {
-      getScoreMatrixRect(m, m[grp_list[[i]], ], sub_mat, verbose)
+      getScoreMatrixRect(m, m[grp_list[[i]], ], sub_mat, !dislike, verbose)
     }
 
     # for (i in seq_along(grp_list)) {

@@ -14,7 +14,7 @@ show_seq_shape(
 \arguments{
 \item{x}{a character vector of sequences or named list of sequences. All sequences must have same width.}
 
-\item{map}{default is \code{NULL}, a named vector.}
+\item{map}{default is \code{NULL}, a named string vector.}
 
 \item{x_lab}{x lab.}
 

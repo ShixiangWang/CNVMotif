@@ -9,7 +9,7 @@ test_that("Function sh_build_sub_matrix() @ L71", {
 })
 
 
-test_that("Function sh_get_score_matrix() @ L199", {
+test_that("Function sh_get_score_matrix() @ L200", {
   
   load(system.file("extdata", "toy_segTab.RData",
     package = "sigminer.helper", mustWork = TRUE
@@ -55,7 +55,7 @@ test_that("Function sh_get_score_matrix() @ L199", {
 })
 
 
-test_that("Function show_seq_shape() @ L355", {
+test_that("Function show_seq_shape() @ L363", {
   
   p <- show_seq_shape(c("ADGHK"))
   p
@@ -63,7 +63,7 @@ test_that("Function show_seq_shape() @ L355", {
 })
 
 
-test_that("Function show_seq_logo() @ L408", {
+test_that("Function show_seq_logo() @ L416", {
   
   p1 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")))
   p1

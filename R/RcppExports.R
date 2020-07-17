@@ -9,11 +9,11 @@ pairScoreMatrix <- function(x, y, x_max, y_max) {
     .Call(`_sigminer_helper_pairScoreMatrix`, x, y, x_max, y_max)
 }
 
-getScoreMatrix <- function(indexMat, subMat, bSize, verbose) {
-    .Call(`_sigminer_helper_getScoreMatrix`, indexMat, subMat, bSize, verbose)
+getScoreMatrix <- function(indexMat, subMat, bSize, like, verbose) {
+    .Call(`_sigminer_helper_getScoreMatrix`, indexMat, subMat, bSize, like, verbose)
 }
 
-getScoreMatrixRect <- function(indexMat1, indexMat2, subMat, verbose) {
-    .Call(`_sigminer_helper_getScoreMatrixRect`, indexMat1, indexMat2, subMat, verbose)
+getScoreMatrixRect <- function(indexMat1, indexMat2, subMat, like, verbose) {
+    .Call(`_sigminer_helper_getScoreMatrixRect`, indexMat1, indexMat2, subMat, like, verbose)
 }
 

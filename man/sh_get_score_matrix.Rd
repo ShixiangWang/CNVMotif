@@ -5,7 +5,14 @@
 \alias{sh_get_score_matrix2}
 \title{Get Copy Number Sequence Similarity or Distance Matrix}
 \usage{
-sh_get_score_matrix(x, sub_mat, block_size = NULL, verbose = FALSE, cores = 1L)
+sh_get_score_matrix(
+  x,
+  sub_mat,
+  block_size = NULL,
+  dislike = FALSE,
+  cores = 1L,
+  verbose = FALSE
+)
 
 sh_get_score_matrix2(
   x,
@@ -24,10 +31,12 @@ See \code{\link[=sh_build_sub_matrix]{sh_build_sub_matrix()}}.}
 results from adjacent sequences will be aggregrate by means to reduce the size of result
 matrix.}
 
-\item{verbose}{if \code{TRUE}, print extra message, note it will slower the computation.}
+\item{dislike}{if \code{TRUE}, returns a dissimilarity matrix instead of a similarity matrix.}
 
 \item{cores}{computer cores, default is \code{1}, note it is super fast already, set more
 cores typically do not speed up the computation.}
+
+\item{verbose}{if \code{TRUE}, print extra message, note it will slower the computation.}
 
 \item{method}{a method for getting (storing) the results.}
 }
