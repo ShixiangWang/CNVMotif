@@ -33,7 +33,7 @@ devtools::install_github("ShixiangWang/sigminer.helper")
 ``` r
 library(sigminer.helper)
 library(ggseqlogo)
-#> Warning: package 'ggseqlogo' was built under R version 4.0.2
+#> Warning: package 'ggseqlogo' was built under R version 4.0.1
 data(ggseqlogo_sample)
 
 ## Same as ggseqlogo()
@@ -41,7 +41,7 @@ p1 <- ggseqlogo2(seqs_dna[[1]])
 p1
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="50%" style="display: block; margin: auto;" />
 
 ``` r
 
@@ -52,4 +52,4 @@ p2 <- ggseqlogo2(seqs_dna[[1]], idor = idor)
 p2
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-2-2.png" width="50%" style="display: block; margin: auto;" />
