@@ -150,6 +150,7 @@ geom_logo2 <- function(data = NULL, method = "bits", seq_type = "auto", namespac
   ## Modified by Shixiang
   if (!is.null(idor)) {
     data <- merge(data, cs, by.x = "letter2", by.y = "letter", all.x = T)
+    data$letter2 <- NULL
   } else {
     data <- merge(data, cs, by = "letter", all.x = T)
   }
