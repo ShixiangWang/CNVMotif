@@ -55,7 +55,15 @@ test_that("Function sh_get_score_matrix() @ L199", {
 })
 
 
-test_that("Function show_seq_logo() @ L393", {
+test_that("Function show_seq_shape() @ L355", {
+  
+  p <- show_seq_shape(c("ADGHK"))
+  p
+  expect_is(p, "ggplot")
+})
+
+
+test_that("Function show_seq_logo() @ L408", {
   
   p1 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")))
   p1

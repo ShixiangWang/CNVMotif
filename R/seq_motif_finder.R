@@ -337,22 +337,37 @@ sh_get_score_matrix2 <- function(x, sub_mat, method = c("base", "ff", "bigmemory
   return(mat)
 }
 
+#' Show Copy Number Sequence Shapes
+#'
+#' @inheritParams show_seq_logo
+#' @param map default is `NULL`, a named string vector.
+#' @param x_lab x lab.
+#' @param y_lab y lab.
+#'
+#' @return a `ggplot` object.
+#' @export
+#'
+#' @examples
+#' p <- show_seq_shape(c("ADGHK"))
+#' p
+#' @testexamples
+#' expect_is(p, "ggplot")
 show_seq_shape <- function(x, map = NULL, x_lab = "Estimated segment length", y_lab = "Copy number") {
   if (!requireNamespace("scales", quietly = TRUE)) {
     stop("Package 'scales' is required, please install it firstly!")
   }
 
   if (is.null(map)) {
-    map <- LETTERS[1:24]
-    names(map) <- vector_to_combination(1:4, 0:5)
+    map <- vector_to_combination(1:4, 0:5)
+    names(map) <- LETTERS[1:24]
   }
 
   map_df <- data.frame(
-    lenVal = strsplit(names(map), split = "") %>% purrr::map_int(~ as.integer(.[1])),
-    segVal = strsplit(names(map), split = "") %>% purrr::map_int(~ as.integer(.[2])),
+    lenVal = strsplit(map, split = "") %>% purrr::map_int(~ as.integer(.[1])),
+    segVal = strsplit(map, split = "") %>% purrr::map_int(~ as.integer(.[2])),
     stringsAsFactors = FALSE
   )
-  rownames(map_df) <- as.character(map)
+  rownames(map_df) <- names(map)
 
   ## test data
   df <- map_df[unlist(strsplit(x, split = "")), ]
