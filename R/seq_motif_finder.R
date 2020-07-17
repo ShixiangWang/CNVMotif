@@ -500,7 +500,8 @@ show_seq_logo <- function(x, method = c("prob", "bits"), ncol = NULL, nrow = NUL
 
   if (recode) {
     if (is.null(indicator)) {
-      indicator <- rep(as.character(1:4), 6)
+      #indicator <- rep(as.character(1:4), 6)
+      indicator <- rep(c("S", "M", "L", "E"), 6)
       names(indicator) <- LETTERS[1:24]
     } else {
       if (is.null(names(indicator))) {
