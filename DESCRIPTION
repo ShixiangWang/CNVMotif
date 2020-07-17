@@ -26,8 +26,7 @@ Suggests:
     foreach,
     doParallel,
     covr,
-    scales,
-    cowplot
+    scales
 LinkingTo: 
     Rcpp
 Encoding: UTF-8

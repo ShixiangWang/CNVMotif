@@ -1,0 +1,17 @@
+on: push
+name: Mirror to Gitee
+jobs:
+  run:
+    name: Sync-Gitee
+    runs-on: ubuntu-latest
+    steps:
+    - name: Mirror the sigminer repos to Gitee.
+      uses: Yikun/hub-mirror-action@master
+      with:
+        src: github/ShixiangWang
+        dst: gitee/ShixiangWang
+        dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+        dst_token: ${{ secrets.GITEE_TOKEN }}
+        account_type: user
+        white_list: 'sigminer,sigminer.helper,sigminer.workflow'
+        force_update: true

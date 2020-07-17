@@ -353,9 +353,11 @@ sh_get_score_matrix2 <- function(x, sub_mat, method = c("base", "ff", "bigmemory
 #' Show Copy Number Sequence Shapes
 #'
 #' @inheritParams show_seq_logo
+#' @inheritParams ggplot2::facet_wrap
 #' @param map default is `NULL`, a named string vector.
 #' @param x_lab x lab.
 #' @param y_lab y lab.
+#' @param line_size_scale the scale size for line width.
 #'
 #' @return a `ggplot` object.
 #' @export
@@ -363,9 +365,16 @@ sh_get_score_matrix2 <- function(x, sub_mat, method = c("base", "ff", "bigmemory
 #' @examples
 #' p <- show_seq_shape(c("ADGHK"))
 #' p
+#' x <- list(a = c("ABCDE", "AXFDP"), b = c("KKDFH", "GKDFM"))
+#' p2 <- show_seq_shape(x)
+#' p2
 #' @testexamples
 #' expect_is(p, "ggplot")
-show_seq_shape <- function(x, map = NULL, x_lab = "Estimated segment length", y_lab = "Copy number") {
+#' expect_is(p2, "ggplot")
+show_seq_shape <- function(x, map = NULL,
+                           line_size_scale = 3,
+                           x_lab = "Estimated segment length", y_lab = "Copy number",
+                           nrow = NULL, ncol = NULL, scales = "free_x") {
   if (!requireNamespace("scales", quietly = TRUE)) {
     stop("Package 'scales' is required, please install it firstly!")
   }
@@ -382,22 +391,60 @@ show_seq_shape <- function(x, map = NULL, x_lab = "Estimated segment length", y_
   )
   rownames(map_df) <- names(map)
 
-  ## test data
-  df <- map_df[unlist(strsplit(x, split = "")), ]
-  df$x_end <- cumsum(df$lenVal)
-  df$x <- dplyr::lag(df$x_end, default = 0)
-  df$color <- ifelse(df$segVal > 2, "red",
-    ifelse(df$segVal < 2, "blue",
-      "black"
-    )
-  )
+  if (is.list(x)) {
+    df <- purrr::map_df(x, seg_data, map_df = map_df, .id = "grp_id")
+  } else {
+    df <- seg_data(x, map_df)
+  }
 
-  ggplot(df, aes_string(x = "x", y = "segVal", xend = "x_end", yend = "segVal")) +
-    geom_segment(color = df$color) +
+  p <- ggplot(df, aes_string(x = "x", y = "segVal", xend = "x_end", yend = "segVal")) +
+    geom_segment(color = df$color, size = df$w * line_size_scale, alpha = df$w) +
     scale_y_continuous(breaks = 0:5, labels = c(0:4, "5+"), limits = c(0, 5)) +
     scale_x_continuous(breaks = scales::pretty_breaks()) +
     labs(x = x_lab, y = y_lab) +
-    cowplot::theme_cowplot()
+    ggseqlogo::theme_logo()
+
+  if (is.list(x)) {
+    p <- p + facet_wrap(~grp_id, nrow = nrow, ncol = ncol, scales = scales)
+  }
+
+  return(p)
+}
+
+seg_data <- function(x, map_df) {
+  x_list <- strsplit(x, split = "")
+  df <- purrr::map_df(x_list, function(x) {
+    dplyr::tibble(
+      pos = seq_along(x),
+      seq = x
+    )
+  }, .id = "seq_id")
+  # dplyr::count(.data$pos, .data$seq)
+  df <- dplyr::bind_cols(df, map_df[df$seq, ])
+
+  df_freq <- df %>%
+    dplyr::count(.data$pos, .data$seq) %>%
+    dplyr::group_by(.data$pos) %>%
+    dplyr::mutate(w = .data$n / sum(.data$n)) %>%
+    dplyr::ungroup()
+
+  df <- df %>%
+    dplyr::group_by(.data$seq_id) %>%
+    dplyr::mutate(
+      x_end = cumsum(.data$lenVal),
+      x = dplyr::lag(.data$x_end, default = 0)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(color = dplyr::case_when(
+      .data$segVal > 2 ~ "red",
+      .data$segVal < 2 ~ "blue",
+      TRUE ~ "black"
+    )) %>%
+    dplyr::select(-.data$seq_id) %>%
+    unique() %>%
+    dplyr::left_join(df_freq, by = c("pos", "seq"))
+
+  df
 }
 
 #' Show Copy Number Sequence Logos

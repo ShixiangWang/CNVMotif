@@ -60,15 +60,19 @@ test_that("Function sh_get_score_matrix() @ L205", {
 })
 
 
-test_that("Function show_seq_shape() @ L368", {
+test_that("Function show_seq_shape() @ L374", {
   
   p <- show_seq_shape(c("ADGHK"))
   p
+  x <- list(a = c("ABCDE", "AXFDP"), b = c("KKDFH", "GKDFM"))
+  p2 <- show_seq_shape(x)
+  p2
   expect_is(p, "ggplot")
+  expect_is(p2, "ggplot")
 })
 
 
-test_that("Function show_seq_logo() @ L421", {
+test_that("Function show_seq_logo() @ L468", {
   
   p1 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")))
   p1

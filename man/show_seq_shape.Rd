@@ -7,8 +7,12 @@
 show_seq_shape(
   x,
   map = NULL,
+  line_size_scale = 3,
   x_lab = "Estimated segment length",
-  y_lab = "Copy number"
+  y_lab = "Copy number",
+  nrow = NULL,
+  ncol = NULL,
+  scales = "free_x"
 )
 }
 \arguments{
@@ -16,9 +20,19 @@ show_seq_shape(
 
 \item{map}{default is \code{NULL}, a named string vector.}
 
+\item{line_size_scale}{the scale size for line width.}
+
 \item{x_lab}{x lab.}
 
 \item{y_lab}{y lab.}
+
+\item{nrow}{Number of rows, same as \code{ncol}}
+
+\item{ncol}{Number of columns, works only when \code{facet='wrap'}, see \code{\link{facet_wrap}}}
+
+\item{scales}{Should scales be fixed (\code{"fixed"}, the default),
+free (\code{"free"}), or free in one dimension (\code{"free_x"},
+\code{"free_y"})?}
 }
 \value{
 a \code{ggplot} object.
@@ -29,4 +43,7 @@ Show Copy Number Sequence Shapes
 \examples{
 p <- show_seq_shape(c("ADGHK"))
 p
+x <- list(a = c("ABCDE", "AXFDP"), b = c("KKDFH", "GKDFM"))
+p2 <- show_seq_shape(x)
+p2
 }
