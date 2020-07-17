@@ -18,5 +18,5 @@ a \code{list}.
 Build a Substitution Matrix
 }
 \examples{
-sub_list <- sh_build_sub_matrix
+sub_list <- sh_build_sub_matrix()
 }

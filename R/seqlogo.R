@@ -1,23 +1,23 @@
 logo_data2 <- function(seqs, idor = NULL, method = "bits", stack_width = 0.95, rev_stack_order = F,
                        font, seq_group = 1, seq_type = "auto", namespace = NULL) {
-  font_df <- ggseqlogo:::get_font(font)
+  font_df <- get_font(font)
   if (method == "bits") {
-    hh <- ggseqlogo:::bits_method(seqs,
+    hh <- bits_method(seqs,
       decreasing = rev_stack_order,
       seq_type = seq_type, namespace = namespace
     )
   }
   else if (method == "probability") {
-    hh <- ggseqlogo:::probability_method(seqs,
+    hh <- probability_method(seqs,
       decreasing = rev_stack_order,
       seq_type = seq_type, namespace = namespace
     )
   }
   else if (method == "custom") {
     if (seq_type == "auto") {
-      seq_type <- ggseqlogo:::guessSeqType(rownames(seqs))
+      seq_type <- guessSeqType(rownames(seqs))
     }
-    hh <- ggseqlogo:::matrix_to_heights(seqs, seq_type, decreasing = rev_stack_order)
+    hh <- matrix_to_heights(seqs, seq_type, decreasing = rev_stack_order)
   }
   else {
     stop("Invalid method!")
@@ -33,9 +33,9 @@ logo_data2 <- function(seqs, idor = NULL, method = "bits", stack_width = 0.95, r
 
   ff <- merge(font_df, hh, by = "letter")
   x_pad <- stack_width / 2
-  ff$x <- ggseqlogo:::newRange(ff$x, ff$position - x_pad, ff$position +
+  ff$x <- newRange(ff$x, ff$position - x_pad, ff$position +
     x_pad)
-  ff$y <- ggseqlogo:::newRange(ff$y, ff$y0, ff$y1)
+  ff$y <- newRange(ff$y, ff$y0, ff$y1)
 
   if (!is.null(idor)) {
     cls <- c("x", "y", "letter", "position", "order", "letter2")
@@ -62,10 +62,9 @@ logo_data2 <- function(seqs, idor = NULL, method = "bits", stack_width = 0.95, r
 #'
 #' ## Extra feature
 #' idor <- as.character(1:4)
-#' names(idor) <- c("A","C","G","T")
+#' names(idor) <- c("A", "C", "G", "T")
 #' p2 <- ggseqlogo2(seqs_dna[[1]], idor = idor)
 #' p2
-#'
 #' @testexamples
 #' expect_is(p1, "ggplot")
 #' expect_is(p2, "ggplot")
@@ -145,7 +144,7 @@ geom_logo2 <- function(data = NULL, method = "bits", seq_type = "auto", namespac
     return(data)
   }
   seq_type <- attr(data, "seq_type")
-  cs <- ggseqlogo:::get_col_scheme(col_scheme, seq_type)
+  cs <- get_col_scheme(col_scheme, seq_type)
   legend_title <- attr(cs, "cs_label")
 
   ## Modified by Shixiang

@@ -87,8 +87,7 @@ p1
 
 ## Extra feature
 idor <- as.character(1:4)
-names(idor) <- c("A","C","G","T")
+names(idor) <- c("A", "C", "G", "T")
 p2 <- ggseqlogo2(seqs_dna[[1]], idor = idor)
 p2
-
 }

@@ -16,14 +16,18 @@ Imports:
     ggplot2,
     ggseqlogo,
     magrittr,
-    Rcpp
+    Rcpp,
+    dplyr,
+    purrr
 Suggests: 
     testthat,
     bigmemory,
     ff,
     foreach,
     doParallel,
-    covr
+    covr,
+    scales,
+    cowplot
 LinkingTo: 
     Rcpp
 Encoding: UTF-8

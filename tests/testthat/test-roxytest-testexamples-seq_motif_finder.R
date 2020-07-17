@@ -2,9 +2,68 @@
 
 context("File R/seq_motif_finder.R: @testexamples")
 
-test_that("Function sh_build_sub_matrix() @ L50", {
+test_that("Function sh_build_sub_matrix() @ L71", {
   
-  sub_list <- sh_build_sub_matrix
+  sub_list <- sh_build_sub_matrix()
   expect_is(sub_list, "list")
+})
+
+
+test_that("Function sh_get_score_matrix() @ L199", {
+  
+  load(system.file("extdata", "toy_segTab.RData",
+    package = "sigminer.helper", mustWork = TRUE
+  ))
+  x <- sh_coding_segs(segTabs)
+  x
+  seqs <- sh_extract_seqs(x$dt)
+  seqs
+  mat <- sh_get_score_matrix(seqs$keep, x$mat, verbose = TRUE)
+  mat[1:5, 1:5]
+  
+  mat2 <- sh_get_score_matrix2(seqs$keep, x$mat)
+  identical(mat, mat2)
+  
+  mat_b <- sh_get_score_matrix(seqs$keep, x$mat, block_size = 2L)
+  ## block1 represents the first 2 sequences
+  ## block2 represents the 3rd, 4th sequences
+  ## ...
+  mat_b[1:5, 1:5]
+  
+  if (require("doParallel")) {
+    mock_seqs <- sapply(1:10000, function(x) {
+      paste(sample(LETTERS[1:24], 5, replace = TRUE), collapse = "")
+    })
+  
+    system.time(
+      y1 <- sh_get_score_matrix(mock_seqs, x$mat, cores = 1)
+    )
+  
+    system.time(
+      y2 <- sh_get_score_matrix(mock_seqs, x$mat, cores = 2)
+    )
+  
+    all.equal(y1, y2)
+  }
+  expect_is(x, "list")
+  expect_is(seqs, "list")
+  expect_is(mat, "matrix")
+  expect_equal(mat, mat2)
+  if (require("doParallel")) {
+    expect_equal(y1, y2)
+  }
+})
+
+
+test_that("Function show_seq_logo() @ L393", {
+  
+  p1 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")))
+  p1
+  p2 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")),
+    recode = TRUE
+  )
+  p2
+  expect_is(p1, "ggplot")
+  expect_is(p2, "ggplot")
 })
 
