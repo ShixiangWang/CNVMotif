@@ -14,8 +14,8 @@ The goal of sigminer.helper is to …
 
 ## Installation
 
-You can install the released version of {sigminer.helper} from
-[CRAN](https://CRAN.R-project.org) with:
+~~You can install the released version of {sigminer.helper} from
+[CRAN](https://CRAN.R-project.org) with:~~
 
 ``` r
 install.packages("sigminer.helper")
@@ -29,3 +29,27 @@ devtools::install_github("ShixiangWang/sigminer.helper")
 ```
 
 ## Example
+
+``` r
+library(sigminer.helper)
+library(ggseqlogo)
+#> Warning: package 'ggseqlogo' was built under R version 4.0.2
+data(ggseqlogo_sample)
+
+## Same as ggseqlogo()
+p1 <- ggseqlogo2(seqs_dna[[1]])
+p1
+```
+
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+
+``` r
+
+## Extra feature
+idor <- as.character(1:4)
+names(idor) <- c("A", "C", "G", "T")
+p2 <- ggseqlogo2(seqs_dna[[1]], idor = idor)
+p2
+```
+
+<img src="man/figures/README-unnamed-chunk-2-2.png" width="100%" />
