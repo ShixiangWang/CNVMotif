@@ -43,9 +43,9 @@ sh_coding_segs <- function(x, simple_version = FALSE, max_len_score = 4L) {
   x[, segVal := ifelse(segVal > 5, 5, segVal) %>% as.integer()]
   if (isFALSE(simple_version)) {
     x[, lenVal := cut(end - start + 1L,
-                      breaks = c(-Inf, 5e4, 5e5, 5e6, Inf),
-                      labels = c("1", "2", "3", "4"),
-                      right = FALSE
+      breaks = c(-Inf, 5e4, 5e5, 5e6, Inf),
+      labels = c("1", "2", "3", "4"),
+      right = FALSE
     ) %>% as.integer()]
   }
 
@@ -98,7 +98,6 @@ sh_build_sub_matrix <- function(simple_version = FALSE, max_len_score = 4L) {
     pair_mat <- expand.grid(l, v, KEEP.OUT.ATTRS = FALSE) %>% as.matrix()
 
     score_mat <- pairScoreMatrix(pair_mat, pair_mat, max_l, max_v)
-
   } else {
     v <- 0:5
     k <- LETTERS[1:6]
@@ -165,7 +164,7 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, local_cutoff = 1e7, return_
 
   dt$too_large <- (dt$end - dt$start + 1L) >= local_cutoff
   message("Total segments is ", nrow(dt), " and ", sum(dt$too_large), " of them with length >=", local_cutoff)
-  message("Fraction: ", round(sum(dt$too_large)/nrow(dt), digits = 3))
+  message("Fraction: ", round(sum(dt$too_large) / nrow(dt), digits = 3))
   dt <- dt[, c("ID", "Seqs", "too_large")]
   dt <- dt[, list(Seqs = collapse_shift_seqs2(Seqs, too_large, len = len, step = step)),
     by = "ID"
@@ -408,6 +407,7 @@ sh_get_score_matrix2 <- function(x, sub_mat, simple_version = FALSE,
 #'
 #' @inheritParams show_seq_logo
 #' @inheritParams ggplot2::facet_wrap
+#' @inheritParams sh_build_sub_matrix
 #' @param map default is `NULL`, a named string vector.
 #' @param x_lab x lab.
 #' @param y_lab y lab.
@@ -426,29 +426,43 @@ sh_get_score_matrix2 <- function(x, sub_mat, simple_version = FALSE,
 #' expect_is(p, "ggplot")
 #' expect_is(p2, "ggplot")
 show_seq_shape <- function(x, map = NULL,
+                           simple_version = FALSE,
                            line_size_scale = 3,
-                           x_lab = "Estimated segment length", y_lab = "Copy number",
+                           x_lab = ifelse(simple_version, "Assumed equal length", "Estimated segment length"),
+                           y_lab = "Copy number",
                            nrow = NULL, ncol = NULL, scales = "free_x") {
   if (!requireNamespace("scales", quietly = TRUE)) {
     stop("Package 'scales' is required, please install it firstly!")
   }
 
-  if (is.null(map)) {
-    map <- vector_to_combination(1:4, 0:5)
-    names(map) <- LETTERS[1:24]
+  if (simple_version) {
+    if (is.null(map)) {
+      map <- 0:5
+      names(map) <- LETTERS[1:6]
+    }
+
+    map_df <- data.frame(
+      segVal = 0:5,
+      stringsAsFactors = FALSE
+    )
+  } else {
+    if (is.null(map)) {
+      map <- vector_to_combination(1:4, 0:5)
+      names(map) <- LETTERS[1:24]
+    }
+
+    map_df <- data.frame(
+      lenVal = strsplit(map, split = "") %>% purrr::map_int(~ as.integer(.[1])),
+      segVal = strsplit(map, split = "") %>% purrr::map_int(~ as.integer(.[2]))
+    )
   }
 
-  map_df <- data.frame(
-    lenVal = strsplit(map, split = "") %>% purrr::map_int(~ as.integer(.[1])),
-    segVal = strsplit(map, split = "") %>% purrr::map_int(~ as.integer(.[2])),
-    stringsAsFactors = FALSE
-  )
   rownames(map_df) <- names(map)
 
   if (is.list(x)) {
-    df <- purrr::map_df(x, seg_data, map_df = map_df, .id = "grp_id")
+    df <- purrr::map_df(x, seg_data, map_df = map_df, simple = simple_version, .id = "grp_id")
   } else {
-    df <- seg_data(x, map_df)
+    df <- seg_data(x, map_df, simple = simple_version)
   }
 
   p <- ggplot(df, aes_string(x = "x", y = "segVal", xend = "x_end", yend = "segVal")) +
@@ -465,7 +479,7 @@ show_seq_shape <- function(x, map = NULL,
   return(p)
 }
 
-seg_data <- function(x, map_df) {
+seg_data <- function(x, map_df, simple = FALSE) {
   x_list <- strsplit(x, split = "")
   df <- purrr::map_df(x_list, function(x) {
     dplyr::tibble(
@@ -474,7 +488,7 @@ seg_data <- function(x, map_df) {
     )
   }, .id = "seq_id")
   # dplyr::count(.data$pos, .data$seq)
-  df <- dplyr::bind_cols(df, map_df[df$seq, ])
+  df <- dplyr::bind_cols(df, map_df[df$seq, , drop = FALSE])
 
   df_freq <- df %>%
     dplyr::count(.data$pos, .data$seq) %>%
@@ -482,6 +496,9 @@ seg_data <- function(x, map_df) {
     dplyr::mutate(w = .data$n / sum(.data$n)) %>%
     dplyr::ungroup()
 
+  if (simple) {
+    df$lenVal <- 1L
+  }
   df <- df %>%
     dplyr::group_by(.data$seq_id) %>%
     dplyr::mutate(
@@ -503,6 +520,7 @@ seg_data <- function(x, map_df) {
 
 #' Show Copy Number Sequence Logos
 #' @inheritParams ggseqlogo2
+#' @inheritParams sh_build_sub_matrix
 #' @param x a character vector of sequences or named list of sequences. All sequences must have same width.
 #' @param recode if `TRUE`, it will use default indicator or specified indicator to show the letters in
 #' the plot
@@ -516,10 +534,16 @@ seg_data <- function(x, map_df) {
 #'   recode = TRUE
 #' )
 #' p2
+#' p3 <- show_seq_logo(sapply(split(LETTERS[1:6], 1:2), function(x) paste0(x, collapse = "")),
+#'   simple_version = TRUE
+#' )
 #' @testexamples
 #' expect_is(p1, "ggplot")
 #' expect_is(p2, "ggplot")
-show_seq_logo <- function(x, method = c("prob", "bits"), ncol = NULL, nrow = NULL,
+#' expect_is(p3, "ggplot")
+show_seq_logo <- function(x, method = c("prob", "bits"),
+                          simple_version = FALSE,
+                          ncol = NULL, nrow = NULL,
                           recode = FALSE, indicator = NULL, ...) {
   method <- match.arg(method)
 
@@ -531,32 +555,60 @@ show_seq_logo <- function(x, method = c("prob", "bits"), ncol = NULL, nrow = NUL
     FUN = function(x) rgb2hex(x[1], x[2], x[3])
   ) %>% as.character()
 
-  cs <- ggseqlogo::make_col_scheme(
-    chars = LETTERS[1:24],
-    groups = c(
-      rep("2 copy DEL", 4),
-      rep("1 copy DEL", 4),
-      rep("Normal", 4),
-      rep("1 copy AMP", 4),
-      rep("2 copy AMP", 4),
-      rep("3+ copy AMP", 4)
-    ),
-    cols = c(
-      rep("blue", 4),
-      rep(blues[1], 4),
-      rep("black", 4),
-      rep(reds[1], 4),
-      rep(reds[2], 4),
-      rep(reds[3], 4)
-    ),
-    name = "Segment type"
-  )
+  if (simple_version) {
+    cs <- ggseqlogo::make_col_scheme(
+      chars = LETTERS[1:6],
+      groups = c(
+        rep("2 copy DEL", 1),
+        rep("1 copy DEL", 1),
+        rep("Normal", 1),
+        rep("1 copy AMP", 1),
+        rep("2 copy AMP", 1),
+        rep("3+ copy AMP", 1)
+      ),
+      cols = c(
+        rep("blue", 1),
+        rep(blues[1], 1),
+        rep("black", 1),
+        rep(reds[1], 1),
+        rep(reds[2], 1),
+        rep(reds[3], 1)
+      ),
+      name = "Segment type"
+    )
+
+    ns <- LETTERS[1:6]
+  } else {
+    cs <- ggseqlogo::make_col_scheme(
+      chars = LETTERS[1:24],
+      groups = c(
+        rep("2 copy DEL", 4),
+        rep("1 copy DEL", 4),
+        rep("Normal", 4),
+        rep("1 copy AMP", 4),
+        rep("2 copy AMP", 4),
+        rep("3+ copy AMP", 4)
+      ),
+      cols = c(
+        rep("blue", 4),
+        rep(blues[1], 4),
+        rep("black", 4),
+        rep(reds[1], 4),
+        rep(reds[2], 4),
+        rep(reds[3], 4)
+      ),
+      name = "Segment type"
+    )
+
+    ns <- LETTERS[1:24]
+  }
 
   if (recode) {
     if (is.null(indicator)) {
-      #indicator <- rep(as.character(1:4), 6)
-      indicator <- rep(c("S", "M", "L", "E"), 6)
-      names(indicator) <- LETTERS[1:24]
+      if (isFALSE(simple_version)) {
+        indicator <- rep(c("S", "M", "L", "E"), 6)
+        names(indicator) <- LETTERS[1:24]
+      }
     } else {
       if (is.null(names(indicator))) {
         stop("The indicator should have names to map.")
@@ -570,7 +622,7 @@ show_seq_logo <- function(x, method = c("prob", "bits"), ncol = NULL, nrow = NUL
     ncol = ncol,
     nrow = nrow,
     method = method,
-    namespace = LETTERS[1:24],
+    namespace = ns,
     col_scheme = cs,
     idor = indicator,
     ...

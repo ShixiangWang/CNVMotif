@@ -11,7 +11,7 @@ test_that("Function sh_build_sub_matrix() @ L86", {
 })
 
 
-test_that("Function sh_get_score_matrix() @ L252", {
+test_that("Function sh_get_score_matrix() @ L251", {
   
   load(system.file("extdata", "toy_segTab.RData",
     package = "sigminer.helper", mustWork = TRUE
@@ -74,7 +74,7 @@ test_that("Function show_seq_shape() @ L428", {
 })
 
 
-test_that("Function show_seq_logo() @ L522", {
+test_that("Function show_seq_logo() @ L544", {
   
   p1 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")))
   p1
@@ -82,7 +82,11 @@ test_that("Function show_seq_logo() @ L522", {
     recode = TRUE
   )
   p2
+  p3 <- show_seq_logo(sapply(split(LETTERS[1:6], 1:2), function(x) paste0(x, collapse = "")),
+    simple_version = TRUE
+  )
   expect_is(p1, "ggplot")
   expect_is(p2, "ggplot")
+  expect_is(p3, "ggplot")
 })
 

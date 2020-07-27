@@ -7,8 +7,9 @@
 show_seq_shape(
   x,
   map = NULL,
+  simple_version = FALSE,
   line_size_scale = 3,
-  x_lab = "Estimated segment length",
+  x_lab = ifelse(simple_version, "Assumed equal length", "Estimated segment length"),
   y_lab = "Copy number",
   nrow = NULL,
   ncol = NULL,
@@ -19,6 +20,8 @@ show_seq_shape(
 \item{x}{a character vector of sequences or named list of sequences. All sequences must have same width.}
 
 \item{map}{default is \code{NULL}, a named string vector.}
+
+\item{simple_version}{if \code{TRUE}, just use segmental copy number value.}
 
 \item{line_size_scale}{the scale size for line width.}
 

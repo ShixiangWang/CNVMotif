@@ -7,6 +7,7 @@
 show_seq_logo(
   x,
   method = c("prob", "bits"),
+  simple_version = FALSE,
   ncol = NULL,
   nrow = NULL,
   recode = FALSE,
@@ -18,6 +19,8 @@ show_seq_logo(
 \item{x}{a character vector of sequences or named list of sequences. All sequences must have same width.}
 
 \item{method}{Height method, can be one of "bits" or "probability" (default: "bits")}
+
+\item{simple_version}{if \code{TRUE}, just use segmental copy number value.}
 
 \item{ncol}{Number of columns, works only when \code{facet='wrap'}, see \code{\link{facet_wrap}}}
 
@@ -43,4 +46,7 @@ p2 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, coll
   recode = TRUE
 )
 p2
+p3 <- show_seq_logo(sapply(split(LETTERS[1:6], 1:2), function(x) paste0(x, collapse = "")),
+  simple_version = TRUE
+)
 }
