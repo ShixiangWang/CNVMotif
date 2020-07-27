@@ -2,14 +2,16 @@
 
 context("File R/seq_motif_finder.R: @testexamples")
 
-test_that("Function sh_build_sub_matrix() @ L71", {
+test_that("Function sh_build_sub_matrix() @ L86", {
   
   sub_list <- sh_build_sub_matrix()
+  sub_list2 <- sh_build_sub_matrix(simple_version = TRUE)
   expect_is(sub_list, "list")
+  expect_is(sub_list2, "list")
 })
 
 
-test_that("Function sh_get_score_matrix() @ L205", {
+test_that("Function sh_get_score_matrix() @ L252", {
   
   load(system.file("extdata", "toy_segTab.RData",
     package = "sigminer.helper", mustWork = TRUE
@@ -19,19 +21,19 @@ test_that("Function sh_get_score_matrix() @ L205", {
   seqs <- sh_extract_seqs(x$dt)
   seqs
   mat <- sh_get_score_matrix(seqs$keep, x$mat, verbose = TRUE)
-  mat[1:5, 1:5]
+  mat
   
   mat2 <- sh_get_score_matrix2(seqs$keep, x$mat)
   identical(mat, mat2)
   
   mat3 <- sh_get_score_matrix(seqs$keep, x$mat, dislike = TRUE)
-  identical(mat3, 240L - mat)
+  identical(mat3, 120L - mat)
   
   mat_b <- sh_get_score_matrix(seqs$keep, x$mat, block_size = 2L)
   ## block1 represents the first 2 sequences
   ## block2 represents the 3rd, 4th sequences
   ## ...
-  mat_b[1:5, 1:5]
+  mat_b
   
   if (require("doParallel")) {
     mock_seqs <- sapply(1:10000, function(x) {
@@ -53,14 +55,14 @@ test_that("Function sh_get_score_matrix() @ L205", {
   expect_is(seqs, "list")
   expect_is(mat, "matrix")
   expect_equal(mat, mat2)
-  expect_equal(mat3, 240L - mat)
+  expect_equal(mat3, 120L - mat)
   if (require("doParallel")) {
     expect_equal(y1, y2)
   }
 })
 
 
-test_that("Function show_seq_shape() @ L374", {
+test_that("Function show_seq_shape() @ L428", {
   
   p <- show_seq_shape(c("ADGHK"))
   p
@@ -72,7 +74,7 @@ test_that("Function show_seq_shape() @ L374", {
 })
 
 
-test_that("Function show_seq_logo() @ L468", {
+test_that("Function show_seq_logo() @ L522", {
   
   p1 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")))
   p1

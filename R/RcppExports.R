@@ -9,6 +9,14 @@ pairScoreMatrix <- function(x, y, x_max, y_max) {
     .Call(`_sigminer_helper_pairScoreMatrix`, x, y, x_max, y_max)
 }
 
+pairScoreSimpleVector <- function(x, y, max) {
+    .Call(`_sigminer_helper_pairScoreSimpleVector`, x, y, max)
+}
+
+pairScoreSimpleMatrix <- function(x, y, max) {
+    .Call(`_sigminer_helper_pairScoreSimpleMatrix`, x, y, max)
+}
+
 getScoreMatrix <- function(indexMat, subMat, bSize, like, verbose) {
     .Call(`_sigminer_helper_getScoreMatrix`, indexMat, subMat, bSize, like, verbose)
 }

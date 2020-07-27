@@ -33,6 +33,32 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pairScoreSimpleVector
+int pairScoreSimpleVector(NumericVector x, NumericVector y, int max);
+RcppExport SEXP _sigminer_helper_pairScoreSimpleVector(SEXP xSEXP, SEXP ySEXP, SEXP maxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type max(maxSEXP);
+    rcpp_result_gen = Rcpp::wrap(pairScoreSimpleVector(x, y, max));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pairScoreSimpleMatrix
+NumericMatrix pairScoreSimpleMatrix(NumericMatrix x, NumericMatrix y, int max);
+RcppExport SEXP _sigminer_helper_pairScoreSimpleMatrix(SEXP xSEXP, SEXP ySEXP, SEXP maxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type max(maxSEXP);
+    rcpp_result_gen = Rcpp::wrap(pairScoreSimpleMatrix(x, y, max));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getScoreMatrix
 IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int bSize, bool like, bool verbose);
 RcppExport SEXP _sigminer_helper_getScoreMatrix(SEXP indexMatSEXP, SEXP subMatSEXP, SEXP bSizeSEXP, SEXP likeSEXP, SEXP verboseSEXP) {
@@ -67,6 +93,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_sigminer_helper_pairScoreVector", (DL_FUNC) &_sigminer_helper_pairScoreVector, 4},
     {"_sigminer_helper_pairScoreMatrix", (DL_FUNC) &_sigminer_helper_pairScoreMatrix, 4},
+    {"_sigminer_helper_pairScoreSimpleVector", (DL_FUNC) &_sigminer_helper_pairScoreSimpleVector, 3},
+    {"_sigminer_helper_pairScoreSimpleMatrix", (DL_FUNC) &_sigminer_helper_pairScoreSimpleMatrix, 3},
     {"_sigminer_helper_getScoreMatrix", (DL_FUNC) &_sigminer_helper_getScoreMatrix, 5},
     {"_sigminer_helper_getScoreMatrixRect", (DL_FUNC) &_sigminer_helper_getScoreMatrixRect, 5},
     {NULL, NULL, 0}

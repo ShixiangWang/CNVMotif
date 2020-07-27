@@ -8,26 +8,11 @@ int pairScoreVector(NumericVector x, NumericVector y, int x_max, int y_max) {
   if (x[0] == y[0] && x[1] == y[1]) {
     return x_max * y_max;
   } else {
-    int flag = 1;
-    if (((x[1] - 2) > 0) ^ ((y[1] - 2) > 0)) {
-      flag = -1;
-      // In this case, switch copy number 0 and 2 to
-      // avoid result of copy number 0 is greater than
-      // copy number 2
-      //Rcpp::Rcout << x[1] << "," << y[1] << ";";
-      if (x[1] == 0) {
-        x[1] = 2;
-      } else if (x[1] == 2) {
-        x[1] = 0;
-      }
-      if (y[1] == 0) {
-        y[1] = 2;
-      } else if (y[1] == 2) {
-        y[1] = 0;
-      }
-      //Rcpp::Rcout << x[1] << "," << y[1] << std::endl;
+    if ((x[1] > 2 && y[1] < 2) || (x[1] < 2 && y[1] > 2) || (x[1] == 2 && y[1] != 2) || (x[1] != 2 && y[1] == 2)) {
+      return -abs(x[1] - y[1]) * (x_max - abs(x[0] - y[0]));
+    } else {
+      return (y_max - abs(x[1] - y[1])) * (x_max - abs(x[0] - y[0]));
     }
-    return flag * (x_max - abs(x[0] - y[0])) * (y_max - abs(x[1] - y[1]));
   }
 }
 
@@ -39,6 +24,34 @@ NumericMatrix pairScoreMatrix(NumericMatrix x, NumericMatrix y, int x_max, int y
   for (int i = 0; i < nrow; i++) {
     for (int j = 0; j < ncol; j++) {
       out(i, j) = pairScoreVector(x(i, _), y(j, _), x_max, y_max);
+    }
+  }
+
+  return out;
+}
+
+// [[Rcpp::export]]
+int pairScoreSimpleVector(NumericVector x, NumericVector y, int max) {
+  // x[0] and y[0] represent segment copy number value
+  if (x[0] == y[0]) {
+    return max;
+  } else {
+    if ((x[0] > 2 && y[0] < 2) || (x[0] < 2 && y[0] > 2) || (x[0] == 2 && y[0] != 2) || (x[0] != 2 && y[0] == 2)) {
+      return -abs(x[0] - y[0]);
+    } else {
+      return max - abs(x[0] - y[0]);
+    }
+  }
+}
+
+// [[Rcpp::export]]
+NumericMatrix pairScoreSimpleMatrix(NumericMatrix x, NumericMatrix y, int max) {
+  int nrow = x.nrow(), ncol = y.nrow();
+  NumericMatrix out(nrow, ncol);
+
+  for (int i = 0; i < nrow; i++) {
+    for (int j = 0; j < ncol; j++) {
+      out(i, j) = pairScoreSimpleVector(x(i, _), y(j, _), max);
     }
   }
 
@@ -85,7 +98,11 @@ IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int b
 
     return out;
   } else {
-    int chunkSize = (n / bSize) + 1;
+    int chunkSize = (n / bSize);
+    if (n % bSize != 0) {
+      chunkSize += 1;
+    }
+
     IntegerMatrix out(chunkSize);
     int blockScore = 0;
     int eCounter = 0; // element counter to aggregrate

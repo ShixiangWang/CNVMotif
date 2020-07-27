@@ -4,7 +4,13 @@
 \alias{sh_extract_seqs}
 \title{Extract Pasted Sequences from Each Chromosome}
 \usage{
-sh_extract_seqs(dt, len = 5L, step = 2L, return_dt = FALSE)
+sh_extract_seqs(
+  dt,
+  len = 5L,
+  step = 2L,
+  local_cutoff = 1e+07,
+  return_dt = FALSE
+)
 }
 \arguments{
 \item{dt}{a \code{data.table} from \link{sh_coding_segs}.}
@@ -12,6 +18,9 @@ sh_extract_seqs(dt, len = 5L, step = 2L, return_dt = FALSE)
 \item{len}{cut length.}
 
 \item{step}{step size to move on each chromosome sequence.}
+
+\item{local_cutoff}{any segment with length greater than this cutoff will be filtered out and
+used as cutpoint, default is \verb{10Mb}.}
 
 \item{return_dt}{if \code{TRUE}, just return a \code{data.table} containing
 mutated \code{Seqs} column.}

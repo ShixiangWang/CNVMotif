@@ -18,7 +18,8 @@ Imports:
     magrittr,
     Rcpp,
     dplyr,
-    purrr
+    purrr,
+    tidyr
 Suggests: 
     testthat,
     bigmemory,

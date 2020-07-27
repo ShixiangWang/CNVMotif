@@ -8,6 +8,7 @@
 sh_get_score_matrix(
   x,
   sub_mat,
+  simple_version = FALSE,
   block_size = NULL,
   dislike = FALSE,
   cores = 1L,
@@ -17,6 +18,7 @@ sh_get_score_matrix(
 sh_get_score_matrix2(
   x,
   sub_mat,
+  simple_version = FALSE,
   method = c("base", "ff", "bigmemory"),
   verbose = FALSE
 )
@@ -26,6 +28,8 @@ sh_get_score_matrix2(
 
 \item{sub_mat}{a substitution matrix, each element indicates a score to plus.
 See \code{\link[=sh_build_sub_matrix]{sh_build_sub_matrix()}}.}
+
+\item{simple_version}{if \code{TRUE}, just use segmental copy number value.}
 
 \item{block_size}{a block size to aggregrate, this is designed for big data, it means
 results from adjacent sequences will be aggregrate by means to reduce the size of result
@@ -57,19 +61,19 @@ x
 seqs <- sh_extract_seqs(x$dt)
 seqs
 mat <- sh_get_score_matrix(seqs$keep, x$mat, verbose = TRUE)
-mat[1:5, 1:5]
+mat
 
 mat2 <- sh_get_score_matrix2(seqs$keep, x$mat)
 identical(mat, mat2)
 
 mat3 <- sh_get_score_matrix(seqs$keep, x$mat, dislike = TRUE)
-identical(mat3, 240L - mat)
+identical(mat3, 120L - mat)
 
 mat_b <- sh_get_score_matrix(seqs$keep, x$mat, block_size = 2L)
 ## block1 represents the first 2 sequences
 ## block2 represents the 3rd, 4th sequences
 ## ...
-mat_b[1:5, 1:5]
+mat_b
 \donttest{
 if (require("doParallel")) {
   mock_seqs <- sapply(1:10000, function(x) {

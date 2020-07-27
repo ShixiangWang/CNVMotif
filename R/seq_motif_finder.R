@@ -1,7 +1,9 @@
 #' Coding Copy Number Segments with Letters.
 #'
-#' See [sh_get_score_matrix()] for examples.
-#' Letters are grouped as short (<50kb), mid (<500kb), long (<5Mb),
+#' See [sh_get_score_matrix()] for examples. See details for full description
+#' of implementation.
+#'
+#' For complicated cases, letters are grouped as short (<50kb), mid (<500kb), long (<5Mb),
 #' long (or extreme) long (>5Mb) segments.
 #' - A B C D for copy number 0.
 #' - E F G H for copy number 1.
@@ -10,13 +12,21 @@
 #' - Q R S T for copy number 4.
 #' - U V W X for copy number 5+.
 #'
+#' For simplified cases, letters are used to code only segment copy number value.
+#' - A for copy number 0.
+#' - B for copy number 1.
+#' - C for copy number 2.
+#' - D for copy number 3.
+#' - E for copy number 4.
+#' - F for copy number 5+.
+#'
 #' @param x a `CopyNumber` object or a `data.frame` with
 #' at least 5 columns ("sample", "chromosome", "start", "end", "segVal").
 #' @inheritParams sh_build_sub_matrix
 #'
 #' @return a `list`.
 #' @export
-sh_coding_segs <- function(x, max_len_score = 8L) {
+sh_coding_segs <- function(x, simple_version = FALSE, max_len_score = 4L) {
   if (inherits(x, "CopyNumber")) {
     x <- x@data
   } else {
@@ -30,21 +40,24 @@ sh_coding_segs <- function(x, max_len_score = 8L) {
   ## Make sure the order is right
   x <- x[order(sample, chromosome, start)]
 
-  x[, `:=`(
-    lenVal = end - start + 1L,
-    segVal = ifelse(segVal > 5, 5, segVal) %>% as.integer() ## Set max value
-  )]
-  x[, lenVal := cut(lenVal,
-    breaks = c(-Inf, 5e4, 5e5, 5e6, Inf),
-    labels = c("1", "2", "3", "4"),
-    right = FALSE
-  ) %>% as.integer()]
+  x[, segVal := ifelse(segVal > 5, 5, segVal) %>% as.integer()]
+  if (isFALSE(simple_version)) {
+    x[, lenVal := cut(end - start + 1L,
+                      breaks = c(-Inf, 5e4, 5e5, 5e6, Inf),
+                      labels = c("1", "2", "3", "4"),
+                      right = FALSE
+    ) %>% as.integer()]
+  }
 
   x[, ID := paste(sample, chromosome, sep = ":")]
 
-  sub_list <- sh_build_sub_matrix(max_len_score = max_len_score)
-  x$Seqs <- sub_list$map[paste0(x$lenVal, x$segVal)]
-  x$Seqs
+  sub_list <- sh_build_sub_matrix(simple_version = simple_version, max_len_score = max_len_score)
+
+  if (simple_version) {
+    x$Seqs <- sub_list$map[as.character(x$segVal)]
+  } else {
+    x$Seqs <- sub_list$map[paste0(x$lenVal, x$segVal)]
+  }
 
   return(
     list(
@@ -57,31 +70,47 @@ sh_coding_segs <- function(x, max_len_score = 8L) {
 
 #' Build a Substitution Matrix
 #'
+#' @param simple_version if `TRUE`, just use segmental copy number value.
 #' @param max_len_score the maximum score for segment length (should >=4).
-#' Default is 8 for balancing the weights between segment length and copy number
-#' value. The maximum score for copy number value is 6.
+#' The maximum score for copy number value is 6 (cannot be changed).
 #'
 #' @return a `list`.
 #' @export
 #'
 #' @examples
 #' sub_list <- sh_build_sub_matrix()
+#' sub_list2 <- sh_build_sub_matrix(simple_version = TRUE)
 #' @testexamples
 #' expect_is(sub_list, "list")
-sh_build_sub_matrix <- function(max_len_score = 8L) {
+#' expect_is(sub_list2, "list")
+sh_build_sub_matrix <- function(simple_version = FALSE, max_len_score = 4L) {
   stopifnot(max_len_score >= 4)
 
-  l <- 1:4
-  v <- 0:5
-  k <- LETTERS[1:24]
-  map <- k
-  names(map) <- vector_to_combination(1:4, 0:5)
+  if (isFALSE(simple_version)) {
+    l <- 1:4
+    v <- 0:5
+    k <- LETTERS[1:24]
+    map <- k
+    names(map) <- vector_to_combination(1:4, 0:5)
 
-  max_l <- max_len_score
-  max_v <- length(v)
-  pair_mat <- expand.grid(l, v, KEEP.OUT.ATTRS = FALSE) %>% as.matrix()
+    max_l <- max_len_score
+    max_v <- length(v)
+    pair_mat <- expand.grid(l, v, KEEP.OUT.ATTRS = FALSE) %>% as.matrix()
 
-  score_mat <- pairScoreMatrix(pair_mat, pair_mat, max_l, max_v)
+    score_mat <- pairScoreMatrix(pair_mat, pair_mat, max_l, max_v)
+
+  } else {
+    v <- 0:5
+    k <- LETTERS[1:6]
+    map <- k
+    names(map) <- as.character(v)
+
+    max_v <- length(v)
+    pair_mat <- v %>% as.matrix()
+
+    score_mat <- pairScoreSimpleMatrix(pair_mat, pair_mat, max_v)
+  }
+
   rownames(score_mat) <- colnames(score_mat) <- k
 
   return(list(
@@ -104,6 +133,18 @@ collapse_shift_seqs <- function(x, len = 5L, step = 1L) {
   }
 }
 
+collapse_shift_seqs2 <- function(x, too_large, len = 5L, step = 1L) {
+  z <- seq_along(x)[!too_large]
+  if (length(z) == 0) {
+    return(NULL)
+  } else if (length(z) == 1) {
+    return(x[z])
+  } else {
+    z_list <- split(x[z], findInterval(z, z[diff(z) > 1] + 2L))
+    return(sapply(z_list, collapse_shift_seqs, len = len, step = step) %>% unlist() %>% as.character())
+  }
+}
+
 #' Extract Pasted Sequences from Each Chromosome
 #'
 #' See [sh_get_score_matrix()] for examples.
@@ -112,16 +153,21 @@ collapse_shift_seqs <- function(x, len = 5L, step = 1L) {
 #' @param dt a `data.table` from [sh_coding_segs].
 #' @param len cut length.
 #' @param step step size to move on each chromosome sequence.
+#' @param local_cutoff any segment with length greater than this cutoff will be filtered out and
+#' used as cutpoint, default is `10Mb`.
 #' @param return_dt if `TRUE`, just return a `data.table` containing
 #' mutated `Seqs` column.
 #'
 #' @return a `list`.
 #' @export
-sh_extract_seqs <- function(dt, len = 5L, step = 2L, return_dt = FALSE) {
+sh_extract_seqs <- function(dt, len = 5L, step = 2L, local_cutoff = 1e7, return_dt = FALSE) {
   stopifnot(data.table::is.data.table(dt))
 
-  dt <- dt[, c("ID", "Seqs")]
-  dt <- dt[, list(Seqs = collapse_shift_seqs(Seqs, len = len, step = step)),
+  dt$too_large <- (dt$end - dt$start + 1L) >= local_cutoff
+  message("Total segments is ", nrow(dt), " and ", sum(dt$too_large), " of them with length >=", local_cutoff)
+  message("Fraction: ", round(sum(dt$too_large)/nrow(dt), digits = 3))
+  dt <- dt[, c("ID", "Seqs", "too_large")]
+  dt <- dt[, list(Seqs = collapse_shift_seqs2(Seqs, too_large, len = len, step = step)),
     by = "ID"
   ]
 
@@ -150,6 +196,7 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, return_dt = FALSE) {
 #' @param verbose if `TRUE`, print extra message, note it will slower the computation.
 #' @param cores computer cores, default is `1`, note it is super fast already, set more
 #' cores typically do not speed up the computation.
+#' @inheritParams sh_build_sub_matrix
 #'
 #' @return a score matrix.
 #' @export
@@ -163,19 +210,19 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, return_dt = FALSE) {
 #' seqs <- sh_extract_seqs(x$dt)
 #' seqs
 #' mat <- sh_get_score_matrix(seqs$keep, x$mat, verbose = TRUE)
-#' mat[1:5, 1:5]
+#' mat
 #'
 #' mat2 <- sh_get_score_matrix2(seqs$keep, x$mat)
 #' identical(mat, mat2)
 #'
 #' mat3 <- sh_get_score_matrix(seqs$keep, x$mat, dislike = TRUE)
-#' identical(mat3, 240L - mat)
+#' identical(mat3, 120L - mat)
 #'
 #' mat_b <- sh_get_score_matrix(seqs$keep, x$mat, block_size = 2L)
 #' ## block1 represents the first 2 sequences
 #' ## block2 represents the 3rd, 4th sequences
 #' ## ...
-#' mat_b[1:5, 1:5]
+#' mat_b
 #' \donttest{
 #' if (require("doParallel")) {
 #'   mock_seqs <- sapply(1:10000, function(x) {
@@ -198,11 +245,12 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, return_dt = FALSE) {
 #' expect_is(seqs, "list")
 #' expect_is(mat, "matrix")
 #' expect_equal(mat, mat2)
-#' expect_equal(mat3, 240L - mat)
+#' expect_equal(mat3, 120L - mat)
 #' if (require("doParallel")) {
 #'   expect_equal(y1, y2)
 #' }
-sh_get_score_matrix <- function(x, sub_mat, block_size = NULL, dislike = FALSE,
+sh_get_score_matrix <- function(x, sub_mat, simple_version = FALSE,
+                                block_size = NULL, dislike = FALSE,
                                 cores = 1L, verbose = FALSE) {
   stopifnot(is.numeric(cores))
 
@@ -210,8 +258,13 @@ sh_get_score_matrix <- function(x, sub_mat, block_size = NULL, dislike = FALSE,
     stop("Input substitution matrix cannot contain 'NA' values!")
   }
 
-  map <- seq_len(24L)
-  names(map) <- LETTERS[map]
+  if (simple_version) {
+    map <- seq_len(6L)
+    names(map) <- LETTERS[map]
+  } else {
+    map <- seq_len(24L)
+    names(map) <- LETTERS[map]
+  }
   map <- map - 1L # to 0 based index
 
   ## Checking input
@@ -316,7 +369,8 @@ score_pairwise_strings <- function(x, y, sub_mat) {
 #' @rdname sh_get_score_matrix
 #' @param method a method for getting (storing) the results.
 #' @export
-sh_get_score_matrix2 <- function(x, sub_mat, method = c("base", "ff", "bigmemory"), verbose = FALSE) {
+sh_get_score_matrix2 <- function(x, sub_mat, simple_version = FALSE,
+                                 method = c("base", "ff", "bigmemory"), verbose = FALSE) {
   method <- match.arg(method)
   n <- length(x)
 

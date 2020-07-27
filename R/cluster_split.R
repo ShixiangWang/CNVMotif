@@ -13,7 +13,7 @@ sh_cluster_split <- function(x, s = NULL, block_size = 10) {
     dt <- dplyr::tibble(
       block = names(cluster_blocks),
       cluster = as.character(cluster_blocks),
-      seq = sigminer:::chunk2(s, ceiling(length(s) / block_size))
+      seq = chunk2(s, ceiling(length(s) / block_size))
     ) %>%
       tidyr::unnest("seq") %>%
       data.table::as.data.table()

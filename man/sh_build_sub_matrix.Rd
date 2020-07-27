@@ -4,12 +4,13 @@
 \alias{sh_build_sub_matrix}
 \title{Build a Substitution Matrix}
 \usage{
-sh_build_sub_matrix(max_len_score = 8L)
+sh_build_sub_matrix(simple_version = FALSE, max_len_score = 4L)
 }
 \arguments{
+\item{simple_version}{if \code{TRUE}, just use segmental copy number value.}
+
 \item{max_len_score}{the maximum score for segment length (should >=4).
-Default is 8 for balancing the weights between segment length and copy number
-value. The maximum score for copy number value is 6.}
+The maximum score for copy number value is 6 (cannot be changed).}
 }
 \value{
 a \code{list}.
@@ -19,4 +20,5 @@ Build a Substitution Matrix
 }
 \examples{
 sub_list <- sh_build_sub_matrix()
+sub_list2 <- sh_build_sub_matrix(simple_version = TRUE)
 }

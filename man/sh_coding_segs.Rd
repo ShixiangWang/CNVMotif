@@ -4,22 +4,26 @@
 \alias{sh_coding_segs}
 \title{Coding Copy Number Segments with Letters.}
 \usage{
-sh_coding_segs(x, max_len_score = 8L)
+sh_coding_segs(x, simple_version = FALSE, max_len_score = 4L)
 }
 \arguments{
 \item{x}{a \code{CopyNumber} object or a \code{data.frame} with
 at least 5 columns ("sample", "chromosome", "start", "end", "segVal").}
 
+\item{simple_version}{if \code{TRUE}, just use segmental copy number value.}
+
 \item{max_len_score}{the maximum score for segment length (should >=4).
-Default is 8 for balancing the weights between segment length and copy number
-value. The maximum score for copy number value is 6.}
+The maximum score for copy number value is 6 (cannot be changed).}
 }
 \value{
 a \code{list}.
 }
 \description{
-See \code{\link[=sh_get_score_matrix]{sh_get_score_matrix()}} for examples.
-Letters are grouped as short (<50kb), mid (<500kb), long (<5Mb),
+See \code{\link[=sh_get_score_matrix]{sh_get_score_matrix()}} for examples. See details for full description
+of implementation.
+}
+\details{
+For complicated cases, letters are grouped as short (<50kb), mid (<500kb), long (<5Mb),
 long (or extreme) long (>5Mb) segments.
 \itemize{
 \item A B C D for copy number 0.
@@ -28,5 +32,15 @@ long (or extreme) long (>5Mb) segments.
 \item M N O P for copy number 3.
 \item Q R S T for copy number 4.
 \item U V W X for copy number 5+.
+}
+
+For simplified cases, letters are used to code only segment copy number value.
+\itemize{
+\item A for copy number 0.
+\item B for copy number 1.
+\item C for copy number 2.
+\item D for copy number 3.
+\item E for copy number 4.
+\item F for copy number 5+.
 }
 }

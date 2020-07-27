@@ -1,5 +1,6 @@
 utils::globalVariables(
-  c("sample", "start", "end", "lenVal", "segVal", "ID", "chromosome", "%dopar%", "foreach", "Seqs")
+  c("sample", "start", "end", "lenVal", "segVal", "ID",
+    "chromosome", "%dopar%", "foreach", "Seqs", "too_large")
 )
 
 # Internal functions from other packages ----------------------------------
