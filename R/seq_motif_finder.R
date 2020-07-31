@@ -211,11 +211,8 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, local_cutoff = 1e7, return_
 #' mat <- sh_get_score_matrix(seqs$keep, x$mat, verbose = TRUE)
 #' mat
 #'
-#' mat2 <- sh_get_score_matrix2(seqs$keep, x$mat)
-#' identical(mat, mat2)
-#'
-#' mat3 <- sh_get_score_matrix(seqs$keep, x$mat, dislike = TRUE)
-#' identical(mat3, 120L - mat)
+#' mat2 <- sh_get_score_matrix(seqs$keep, x$mat, dislike = TRUE)
+#' identical(mat2, 120L - mat)
 #'
 #' mat_b <- sh_get_score_matrix(seqs$keep, x$mat, block_size = 2L)
 #' ## block1 represents the first 2 sequences
@@ -243,8 +240,7 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, local_cutoff = 1e7, return_
 #' expect_is(x, "list")
 #' expect_is(seqs, "list")
 #' expect_is(mat, "matrix")
-#' expect_equal(mat, mat2)
-#' expect_equal(mat3, 120L - mat)
+#' expect_equal(mat2, 120L - mat)
 #' if (require("doParallel")) {
 #'   expect_equal(y1, y2)
 #' }
@@ -364,44 +360,6 @@ score_pairwise_strings <- function(x, y, sub_mat) {
     sum()
 }
 
-#' `sh_get_score_matrix2()` is a variant version of `sh_get_score_matrix()`. Normally, it worker worse than `sh_get_score_matrix()`.
-#' @rdname sh_get_score_matrix
-#' @param method a method for getting (storing) the results.
-#' @export
-sh_get_score_matrix2 <- function(x, sub_mat, simple_version = FALSE,
-                                 method = c("base", "ff", "bigmemory"), verbose = FALSE) {
-  method <- match.arg(method)
-  n <- length(x)
-
-  if (method == "base") {
-    mat <- matrix(NA_integer_, nrow = n, ncol = n)
-  } else if (method == "ff") {
-    mat <- ff::ff(NA_integer_,
-      dim = c(n, n), vmode = "byte"
-    ) ## Byte from -128 ~ 127
-  } else {
-    options(bigmemory.allow.dimnames = TRUE, bigmemory.typecast.warning = FALSE)
-    mat <- bigmemory::big.matrix(n, n, type = "integer")
-  }
-  # Matrix column is faster than row
-
-  i <- j <- 1
-  for (i in seq_len(n)) {
-    if (verbose) message("Handling sequence: ", x[i])
-    j_vals <- vector(mode = "integer", length = i)
-    for (j in seq_len(i)) {
-      j_vals[j] <- score_pairwise_strings(x[i], x[j], sub_mat = sub_mat) %>% as.integer()
-    }
-    mat[seq_along(j_vals), i] <- j_vals
-  }
-
-  mat <- mat[]
-  ## NOTE the t() operation
-  ## cannot just assign upper to lower triangle matrix
-  mat[lower.tri(mat)] <- t(mat)[lower.tri(mat)]
-  rownames(mat) <- colnames(mat) <- x
-  return(mat)
-}
 
 #' Show Copy Number Sequence Shapes
 #'

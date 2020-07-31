@@ -2,7 +2,6 @@
 % Please edit documentation in R/seq_motif_finder.R
 \name{sh_get_score_matrix}
 \alias{sh_get_score_matrix}
-\alias{sh_get_score_matrix2}
 \title{Get Copy Number Sequence Similarity or Distance Matrix}
 \usage{
 sh_get_score_matrix(
@@ -12,14 +11,6 @@ sh_get_score_matrix(
   block_size = NULL,
   dislike = FALSE,
   cores = 1L,
-  verbose = FALSE
-)
-
-sh_get_score_matrix2(
-  x,
-  sub_mat,
-  simple_version = FALSE,
-  method = c("base", "ff", "bigmemory"),
   verbose = FALSE
 )
 }
@@ -41,16 +32,12 @@ matrix.}
 cores typically do not speed up the computation.}
 
 \item{verbose}{if \code{TRUE}, print extra message, note it will slower the computation.}
-
-\item{method}{a method for getting (storing) the results.}
 }
 \value{
 a score matrix.
 }
 \description{
 Get Copy Number Sequence Similarity or Distance Matrix
-
-\code{sh_get_score_matrix2()} is a variant version of \code{sh_get_score_matrix()}. Normally, it worker worse than \code{sh_get_score_matrix()}.
 }
 \examples{
 load(system.file("extdata", "toy_segTab.RData",
@@ -63,11 +50,8 @@ seqs
 mat <- sh_get_score_matrix(seqs$keep, x$mat, verbose = TRUE)
 mat
 
-mat2 <- sh_get_score_matrix2(seqs$keep, x$mat)
-identical(mat, mat2)
-
-mat3 <- sh_get_score_matrix(seqs$keep, x$mat, dislike = TRUE)
-identical(mat3, 120L - mat)
+mat2 <- sh_get_score_matrix(seqs$keep, x$mat, dislike = TRUE)
+identical(mat2, 120L - mat)
 
 mat_b <- sh_get_score_matrix(seqs$keep, x$mat, block_size = 2L)
 ## block1 represents the first 2 sequences

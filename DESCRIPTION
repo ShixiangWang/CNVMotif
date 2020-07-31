@@ -22,8 +22,6 @@ Imports:
     tidyr
 Suggests: 
     testthat,
-    bigmemory,
-    ff,
     foreach,
     doParallel,
     covr,
