@@ -5,6 +5,18 @@
 
 using namespace Rcpp;
 
+// LCS
+int LCS(std::string x, std::string y);
+RcppExport SEXP _sigminer_helper_LCS(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::string >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(LCS(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pairScoreVector
 int pairScoreVector(NumericVector x, NumericVector y, int x_max, int y_max);
 RcppExport SEXP _sigminer_helper_pairScoreVector(SEXP xSEXP, SEXP ySEXP, SEXP x_maxSEXP, SEXP y_maxSEXP) {
@@ -91,6 +103,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_sigminer_helper_LCS", (DL_FUNC) &_sigminer_helper_LCS, 2},
     {"_sigminer_helper_pairScoreVector", (DL_FUNC) &_sigminer_helper_pairScoreVector, 4},
     {"_sigminer_helper_pairScoreMatrix", (DL_FUNC) &_sigminer_helper_pairScoreMatrix, 4},
     {"_sigminer_helper_pairScoreSimpleVector", (DL_FUNC) &_sigminer_helper_pairScoreSimpleVector, 3},
