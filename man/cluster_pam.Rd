@@ -11,6 +11,8 @@ cluster_pam(x, k, ...)
 
 \item{k}{positive integer specifying the number of clusters, less than
     the number of observations.}
+
+\item{...}{other parameters passing to \link[cluster:pam]{cluster::pam}.}
 }
 \value{
 a PAM clustering result object.

@@ -50,6 +50,8 @@ cluster::pam, cluster::clara, cluster::fanny, hcut, etc. This argument is
 not required when x is an output of the function 
 \code{NbClust::NbClust()}.}
 
+\item{seed}{random seed.}
+
 \item{...}{optionally further arguments for FUNcluster()}
 }
 \value{

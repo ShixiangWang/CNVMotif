@@ -2,6 +2,7 @@
 #' @inheritParams factoextra::fviz_nbclust
 #' @inheritParams cluster::pam
 #' @param x a dissimilarity matrix.
+#' @param seed random seed.
 #' @return a `ggplot` object.
 #' @export
 cluster_pam_estimate <- function(x,
@@ -75,6 +76,7 @@ cluster_pam_estimate <- function(x,
 #' See [factoextra::fviz_cluster()] for visualization.
 #' @inheritParams cluster::pam
 #' @param x a dissimilarity matrix.
+#' @param ... other parameters passing to [cluster::pam].
 #' @return a PAM clustering result object.
 #' @export
 cluster_pam <- function(x, k, ...) {
