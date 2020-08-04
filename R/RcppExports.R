@@ -5,6 +5,10 @@ LCS <- function(x, y) {
     .Call(`_sigminer_helper_LCS`, x, y)
 }
 
+LCSMatrix <- function(x, y) {
+    .Call(`_sigminer_helper_LCSMatrix`, x, y)
+}
+
 pairScoreVector <- function(x, y, x_max, y_max) {
     .Call(`_sigminer_helper_pairScoreVector`, x, y, x_max, y_max)
 }

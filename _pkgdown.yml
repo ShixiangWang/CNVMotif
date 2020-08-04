@@ -1,0 +1,27 @@
+template:
+  params:
+    bootswatch: united
+destination: docs
+
+authors:
+  Shixiang Wang:
+    href: https://orcid.org/0000-0001-9855-7357
+
+reference:
+  - title: Study Copy Number Variation Sequence Patterns
+    desc: Sigminer helper functions for studying CNV patterns.
+    contents:
+    - sh_coding_segs
+    - sh_extract_seqs
+    - sh_get_score_matrix
+    - sh_cluster_split
+  - title: Visualization
+    desc: Sigminer helper functions for Visualization.
+    contents:
+    - show_seq_logo
+    - show_seq_shape
+    - ggseqlogo2
+  - title: Helper
+    desc: Helper functions providing lower API for functions in this package.
+    contents:
+    - sh_build_sub_matrix

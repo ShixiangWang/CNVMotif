@@ -6,7 +6,7 @@
 \usage{
 sh_get_score_matrix(
   x,
-  sub_mat,
+  sub_mat = NULL,
   simple_version = FALSE,
   block_size = NULL,
   dislike = FALSE,
@@ -58,6 +58,11 @@ mat_b <- sh_get_score_matrix(seqs$keep, x$mat, block_size = 2L)
 ## block2 represents the 3rd, 4th sequences
 ## ...
 mat_b
+
+mat_c <- sh_get_score_matrix(seqs$keep)
+mat_c
+mat_d <- sh_get_score_matrix(seqs$keep, dislike = TRUE)
+mat_d
 \donttest{
 if (require("doParallel")) {
   mock_seqs <- sapply(1:10000, function(x) {

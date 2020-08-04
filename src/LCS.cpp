@@ -18,3 +18,17 @@ int LCS(std::string x, std::string y) {
   return max;
 }
 
+
+// [[Rcpp::export]]
+IntegerMatrix LCSMatrix(StringVector x, StringVector y) {
+  int nrow = x.size(), ncol = y.size();
+  IntegerMatrix out(nrow, ncol);
+
+  for (int i = 0; i < nrow; i++) {
+    for (int j = 0; j < ncol; j++) {
+      out(i, j) = LCS(std::string(x[i]), std::string(y[j]));
+    }
+  }
+
+  return out;
+}

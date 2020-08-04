@@ -144,6 +144,18 @@ collapse_shift_seqs2 <- function(x, too_large, len = 5L, step = 1L) {
   }
 }
 
+collapse_local_seqs <- function(x, too_large) {
+  z <- seq_along(x)[!too_large]
+  if (length(z) == 0) {
+    return(NULL)
+  } else if (length(z) == 1) {
+    return(x[z])
+  } else {
+    z_list <- split(x[z], findInterval(z, z[diff(z) > 1] + 2L))
+    return(sapply(z_list, paste, collapse = "") %>% unlist() %>% as.character())
+  }
+}
+
 #' Extract Pasted Sequences from Each Chromosome
 #'
 #' See [sh_get_score_matrix()] for examples.
@@ -154,33 +166,56 @@ collapse_shift_seqs2 <- function(x, too_large, len = 5L, step = 1L) {
 #' @param step step size to move on each chromosome sequence.
 #' @param local_cutoff any segment with length greater than this cutoff will be filtered out and
 #' used as cutpoint, default is `10Mb`.
+#' @param flexible_approach if `TRUE`, extract flexible-size sequences between segments
+#'  with size less than specified cutoff. So the arguments `len` and `step` are ignored.
 #' @param return_dt if `TRUE`, just return a `data.table` containing
 #' mutated `Seqs` column.
 #'
 #' @return a `list`.
 #' @export
-sh_extract_seqs <- function(dt, len = 5L, step = 2L, local_cutoff = 1e7, return_dt = FALSE) {
+sh_extract_seqs <- function(dt, len = 5L, step = 1L, local_cutoff = 1e7,
+                            flexible_approach = FALSE,
+                            return_dt = FALSE) {
   stopifnot(data.table::is.data.table(dt))
 
-  dt$too_large <- (dt$end - dt$start + 1L) >= local_cutoff
-  message("Total segments is ", nrow(dt), " and ", sum(dt$too_large), " of them with length >=", local_cutoff)
-  message("Fraction: ", round(sum(dt$too_large) / nrow(dt), digits = 3))
-  dt <- dt[, c("ID", "Seqs", "too_large")]
-  dt <- dt[, list(Seqs = collapse_shift_seqs2(Seqs, too_large, len = len, step = step)),
-    by = "ID"
-  ]
+  if (flexible_approach) {
+    message("Task: extract flexible-size sequences between segments with size less than specified cutoff.")
+    dt$too_large <- (dt$end - dt$start + 1L) >= local_cutoff
+    message("Total segments is ", nrow(dt), " and ", sum(dt$too_large), " of them with length >=", local_cutoff)
+    message("Fraction: ", round(sum(dt$too_large) / nrow(dt), digits = 3))
+    dt <- dt[, c("ID", "Seqs", "too_large")]
 
-  if (return_dt) {
-    return(dt)
+    dt <- dt[, list(Seqs = collapse_local_seqs(Seqs, too_large)), by = "ID"]
+
+    if (return_dt) {
+      return(dt)
+    } else {
+      return(unique(dt$Seqs))
+    }
+
+  } else {
+    message("Task: extract specified-size sequences with input 'len' and 'step' under segment size cutoff.")
+    dt$too_large <- (dt$end - dt$start + 1L) >= local_cutoff
+    message("Total segments is ", nrow(dt), " and ", sum(dt$too_large), " of them with length >=", local_cutoff)
+    message("Fraction: ", round(sum(dt$too_large) / nrow(dt), digits = 3))
+    dt <- dt[, c("ID", "Seqs", "too_large")]
+    dt <- dt[, list(Seqs = collapse_shift_seqs2(Seqs, too_large, len = len, step = step)),
+             by = "ID"]
+
+    if (return_dt) {
+      return(dt)
+    }
+
+    all_seqs <- unique(dt$Seqs)
+    keep <- nchar(all_seqs) >= len
+
+    return(
+      list(
+        keep = sort(all_seqs[keep]),
+        drop = sort(all_seqs[!keep])
+      )
+    )
   }
-
-  all_seqs <- unique(dt$Seqs)
-  keep <- nchar(all_seqs) >= len
-
-  list(
-    keep = sort(all_seqs[keep]),
-    drop = sort(all_seqs[!keep])
-  )
 }
 
 #' Get Copy Number Sequence Similarity or Distance Matrix
@@ -219,6 +254,11 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, local_cutoff = 1e7, return_
 #' ## block2 represents the 3rd, 4th sequences
 #' ## ...
 #' mat_b
+#'
+#' mat_c <- sh_get_score_matrix(seqs$keep)
+#' mat_c
+#' mat_d <- sh_get_score_matrix(seqs$keep, dislike = TRUE)
+#' mat_d
 #' \donttest{
 #' if (require("doParallel")) {
 #'   mock_seqs <- sapply(1:10000, function(x) {
@@ -240,107 +280,124 @@ sh_extract_seqs <- function(dt, len = 5L, step = 2L, local_cutoff = 1e7, return_
 #' expect_is(x, "list")
 #' expect_is(seqs, "list")
 #' expect_is(mat, "matrix")
+#' expect_is(mat_b, "matrix")
 #' expect_equal(mat2, 120L - mat)
+#' expect_equal(mat_d, max(mat_c) - mat_c)
 #' if (require("doParallel")) {
 #'   expect_equal(y1, y2)
 #' }
-sh_get_score_matrix <- function(x, sub_mat, simple_version = FALSE,
+sh_get_score_matrix <- function(x, sub_mat = NULL,
+                                simple_version = FALSE,
                                 block_size = NULL, dislike = FALSE,
                                 cores = 1L, verbose = FALSE) {
   stopifnot(is.numeric(cores))
 
-  if (anyNA(sub_mat)) {
-    stop("Input substitution matrix cannot contain 'NA' values!")
-  }
+  if (is.null(sub_mat)) {
+    message("Task: score paired strings with longest common substring method.")
+    message("Final score = 2^(LCS length - 1), for dislike=TRUE, max score is used to substract.")
 
-  if (simple_version) {
-    map <- seq_len(6L)
-    names(map) <- LETTERS[map]
+    y <- LCSMatrix(x, x)
+    y <- ifelse(y > 0, 2^(y - 1), 0)
+    if (dislike) {
+      y <- max(y) - y
+    }
+    rownames(y) <- colnames(y) <- x
+
   } else {
-    map <- seq_len(24L)
-    names(map) <- LETTERS[map]
-  }
-  map <- map - 1L # to 0 based index
+    message("Task: score equal-size paired strings with substitution matrix.")
+    if (anyNA(sub_mat)) {
+      stop("Input substitution matrix cannot contain 'NA' values!")
+    }
 
-  ## Checking input
-  if (any(grepl("[^A-X]", x, ignore.case = FALSE))) {
-    stop("The input sequences should contain only A->X, any other letters are invalid.")
-  }
+    if (simple_version) {
+      map <- seq_len(6L)
+      names(map) <- LETTERS[map]
+    } else {
+      map <- seq_len(24L)
+      names(map) <- LETTERS[map]
+    }
+    map <- map - 1L # to 0 based index
 
-  m <- matrix(NA_integer_, ncol = length(x), nrow = nchar(x[1]))
+    ## Checking input
+    if (any(grepl("[^A-X]", x, ignore.case = FALSE))) {
+      stop("The input sequences should contain only A->X, any other letters are invalid.")
+    }
 
-  for (i in seq_len(ncol(m))) {
-    s <- unlist(strsplit(x[i], split = ""))
-    m[, i] <- map[s] %>% as.integer()
-  }
-  m <- t(m)
+    m <- matrix(NA_integer_, ncol = length(x), nrow = nchar(x[1]))
 
-  if (!is.null(block_size)) {
-    stopifnot(block_size > 1)
-  } else {
-    block_size <- 1
-  }
+    for (i in seq_len(ncol(m))) {
+      s <- unlist(strsplit(x[i], split = ""))
+      m[, i] <- map[s] %>% as.integer()
+    }
+    m <- t(m)
 
-  if (cores == 1) {
-    y <- getScoreMatrix(m, sub_mat, block_size, !dislike, verbose)
+    if (!is.null(block_size)) {
+      stopifnot(block_size > 1)
+    } else {
+      block_size <- 1
+    }
 
-    if (block_size == 1) {
+    if (cores == 1) {
+      y <- getScoreMatrix(m, sub_mat, block_size, !dislike, verbose)
+
+      if (block_size == 1) {
+        colnames(y) <- rownames(y) <- x
+      } else {
+        colnames(y) <- rownames(y) <- paste0("block", seq_len(nrow(y)))
+      }
+    } else {
+      if (block_size > 1) {
+        stop("In parallel mode, 'block_size' can only be one!")
+      }
+
+      if (nrow(m) < 10000) {
+        warning("For data <10000, set cores > 1 is not recommended.", immediate. = TRUE)
+      }
+
+      if (cores <= 0 | cores > parallel::detectCores()) {
+        cores <- parallel::detectCores() %>% as.integer()
+      }
+
+      ngrp <- ceiling(nrow(m) / 1000)
+      grp_list <- chunk2(seq_len(nrow(m)), ngrp)
+
+      if (!requireNamespace("foreach", quietly = TRUE)) {
+        stop("Package 'foreach' is required to go through this parallel method.")
+      }
+
+      if (!"foreach" %in% .packages()) {
+        attachNamespace("foreach")
+      }
+
+      if (!requireNamespace("doParallel", quietly = TRUE)) {
+        stop("Package 'doParallel' is required to go through this parallel method.")
+      }
+
+      if (Sys.info()[["sysname"]] == "Windows") {
+        cl <- parallel::makeCluster(cores)
+        doParallel::registerDoParallel(cl)
+        on.exit(parallel::stopCluster(cl))
+      } else {
+        doParallel::registerDoParallel(cores = cores)
+      }
+
+      y <- foreach::foreach(
+        i = seq_along(grp_list),
+        .combine = "cbind",
+        .packages = "sigminer.helper",
+        # .export = c("m", "grp_list", "sub_mat", "verbose", "getScoreMatrixRect"),
+        .export = c("getScoreMatrixRect"),
+        .verbose = FALSE
+      ) %dopar% {
+        getScoreMatrixRect(m, m[grp_list[[i]], ], sub_mat, !dislike, verbose)
+      }
+
+      # for (i in seq_along(grp_list)) {
+      #   y[, grp_list[[i]]] <- getScoreMatrixRect(m, m[grp_list[[i]], ], sub_mat, verbose)
+      # }
+
       colnames(y) <- rownames(y) <- x
-    } else {
-      colnames(y) <- rownames(y) <- paste0("block", seq_len(nrow(y)))
     }
-  } else {
-    if (block_size > 1) {
-      stop("In parallel mode, 'block_size' can only be one!")
-    }
-
-    if (nrow(m) < 10000) {
-      warning("For data <10000, set cores > 1 is not recommended.", immediate. = TRUE)
-    }
-
-    if (cores <= 0 | cores > parallel::detectCores()) {
-      cores <- parallel::detectCores() %>% as.integer()
-    }
-
-    ngrp <- ceiling(nrow(m) / 1000)
-    grp_list <- chunk2(seq_len(nrow(m)), ngrp)
-
-    if (!requireNamespace("foreach", quietly = TRUE)) {
-      stop("Package 'foreach' is required to go through this parallel method.")
-    }
-
-    if (!"foreach" %in% .packages()) {
-      attachNamespace("foreach")
-    }
-
-    if (!requireNamespace("doParallel", quietly = TRUE)) {
-      stop("Package 'doParallel' is required to go through this parallel method.")
-    }
-
-    if (Sys.info()[["sysname"]] == "Windows") {
-      cl <- parallel::makeCluster(cores)
-      doParallel::registerDoParallel(cl)
-      on.exit(parallel::stopCluster(cl))
-    } else {
-      doParallel::registerDoParallel(cores = cores)
-    }
-
-    y <- foreach::foreach(
-      i = seq_along(grp_list),
-      .combine = "cbind",
-      .packages = "sigminer.helper",
-      # .export = c("m", "grp_list", "sub_mat", "verbose", "getScoreMatrixRect"),
-      .export = c("getScoreMatrixRect"),
-      .verbose = FALSE
-    ) %dopar% {
-      getScoreMatrixRect(m, m[grp_list[[i]], ], sub_mat, !dislike, verbose)
-    }
-
-    # for (i in seq_along(grp_list)) {
-    #   y[, grp_list[[i]]] <- getScoreMatrixRect(m, m[grp_list[[i]], ], sub_mat, verbose)
-    # }
-
-    colnames(y) <- rownames(y) <- x
   }
 
   return(y)
@@ -359,7 +416,6 @@ score_pairwise_strings <- function(x, y, sub_mat) {
     diag() %>%
     sum()
 }
-
 
 #' Show Copy Number Sequence Shapes
 #'

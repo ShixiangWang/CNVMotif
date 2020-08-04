@@ -7,8 +7,9 @@
 sh_extract_seqs(
   dt,
   len = 5L,
-  step = 2L,
+  step = 1L,
   local_cutoff = 1e+07,
+  flexible_approach = FALSE,
   return_dt = FALSE
 )
 }
@@ -21,6 +22,9 @@ sh_extract_seqs(
 
 \item{local_cutoff}{any segment with length greater than this cutoff will be filtered out and
 used as cutpoint, default is \verb{10Mb}.}
+
+\item{flexible_approach}{if \code{TRUE}, extract flexible-size sequences between segments
+with size less than specified cutoff. So the arguments \code{len} and \code{step} are ignored.}
 
 \item{return_dt}{if \code{TRUE}, just return a \code{data.table} containing
 mutated \code{Seqs} column.}

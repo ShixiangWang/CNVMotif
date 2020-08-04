@@ -17,6 +17,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// LCSMatrix
+IntegerMatrix LCSMatrix(StringVector x, StringVector y);
+RcppExport SEXP _sigminer_helper_LCSMatrix(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< StringVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< StringVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(LCSMatrix(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pairScoreVector
 int pairScoreVector(NumericVector x, NumericVector y, int x_max, int y_max);
 RcppExport SEXP _sigminer_helper_pairScoreVector(SEXP xSEXP, SEXP ySEXP, SEXP x_maxSEXP, SEXP y_maxSEXP) {
@@ -104,6 +116,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sigminer_helper_LCS", (DL_FUNC) &_sigminer_helper_LCS, 2},
+    {"_sigminer_helper_LCSMatrix", (DL_FUNC) &_sigminer_helper_LCSMatrix, 2},
     {"_sigminer_helper_pairScoreVector", (DL_FUNC) &_sigminer_helper_pairScoreVector, 4},
     {"_sigminer_helper_pairScoreMatrix", (DL_FUNC) &_sigminer_helper_pairScoreMatrix, 4},
     {"_sigminer_helper_pairScoreSimpleVector", (DL_FUNC) &_sigminer_helper_pairScoreSimpleVector, 3},
