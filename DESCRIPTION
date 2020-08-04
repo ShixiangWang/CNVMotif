@@ -11,21 +11,24 @@ Authors@R:
 Description: Provides extra operation, analysis and
     visualization functionality for R package 'sigminer'.
 License: MIT + file LICENSE
+Depends: 
+    factoextra
 Imports: 
+    cluster,
     data.table,
+    dplyr,
     ggplot2,
     ggseqlogo,
     magrittr,
-    Rcpp,
-    dplyr,
     purrr,
+    Rcpp,
     tidyr
 Suggests: 
-    testthat,
-    foreach,
-    doParallel,
     covr,
-    scales
+    doParallel,
+    foreach,
+    scales,
+    testthat
 LinkingTo: 
     Rcpp
 Encoding: UTF-8
