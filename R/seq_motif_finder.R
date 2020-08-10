@@ -190,7 +190,7 @@ sh_extract_seqs <- function(dt, len = 5L, step = 1L, local_cutoff = 1e7,
     if (return_dt) {
       return(dt)
     } else {
-      return(unique(dt$Seqs))
+      return(sort(unique(dt$Seqs)))
     }
 
   } else {
