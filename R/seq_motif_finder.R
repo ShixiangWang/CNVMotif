@@ -294,7 +294,7 @@ sh_get_score_matrix <- function(x, sub_mat = NULL,
 
   if (is.null(sub_mat)) {
     message("Task: score paired strings with longest common substring method.")
-    message("Final score = 2^(LCS length - 1), for dislike=TRUE, max score is used to substract.")
+    message("Final score = 2^(LCS length - 1), for dislike=TRUE, maximum score of similarity matrix is used to substract.")
 
     y <- LCSMatrix(x, x)
     y <- ifelse(y > 0, 2^(y - 1), 0)
