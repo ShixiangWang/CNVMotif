@@ -221,7 +221,8 @@ sh_extract_seqs <- function(dt, len = 5L, step = 1L, local_cutoff = 1e7,
 #' Get Copy Number Sequence Similarity or Distance Matrix
 #'
 #' @param x a coding copy number sequence (valid letters are A to X).
-#' @param sub_mat a substitution matrix, each element indicates a score to plus.
+#' @param sub_mat default is `NULL`, use longest common substring method.
+#' It can be a substitution matrix, each element indicates a score to plus.
 #' See [sh_build_sub_matrix()].
 #' @param block_size a block size to aggregrate, this is designed for big data, it means
 #' results from adjacent sequences will be aggregrate by means to reduce the size of result
@@ -294,13 +295,12 @@ sh_get_score_matrix <- function(x, sub_mat = NULL,
 
   if (is.null(sub_mat)) {
     message("Task: score paired strings with longest common substring method.")
-    message("Final score = 2^(LCS length - 1), for dislike=TRUE, maximum score of similarity matrix is used to substract.")
+    message("Final score = 2^(length - 1) for match otherwise 0.")
+    message("  If dislike=TRUE, length of longest string - longest common substring is used.")
 
-    y <- LCSMatrix(x, x)
-    y <- ifelse(y > 0, 2^(y - 1), 0)
-    if (dislike) {
-      y <- max(y) - y
-    }
+    y <- LCSMatrix(x, x, match = !dislike)
+    y <- data.table::fifelse(y > 0, 2^(y - 1), 0)
+
     rownames(y) <- colnames(y) <- x
 
   } else {
