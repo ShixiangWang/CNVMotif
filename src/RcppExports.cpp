@@ -114,6 +114,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// getLocalSubstr
+CharacterVector getLocalSubstr(CharacterVector x, NumericVector y, double cutoff);
+RcppExport SEXP _sigminer_helper_getLocalSubstr(SEXP xSEXP, SEXP ySEXP, SEXP cutoffSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< double >::type cutoff(cutoffSEXP);
+    rcpp_result_gen = Rcpp::wrap(getLocalSubstr(x, y, cutoff));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sigminer_helper_LCS", (DL_FUNC) &_sigminer_helper_LCS, 2},
@@ -124,6 +137,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sigminer_helper_pairScoreSimpleMatrix", (DL_FUNC) &_sigminer_helper_pairScoreSimpleMatrix, 3},
     {"_sigminer_helper_getScoreMatrix", (DL_FUNC) &_sigminer_helper_getScoreMatrix, 5},
     {"_sigminer_helper_getScoreMatrixRect", (DL_FUNC) &_sigminer_helper_getScoreMatrixRect, 5},
+    {"_sigminer_helper_getLocalSubstr", (DL_FUNC) &_sigminer_helper_getLocalSubstr, 3},
     {NULL, NULL, 0}
 };
 

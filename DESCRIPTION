@@ -11,8 +11,6 @@ Authors@R:
 Description: Provides extra operation, analysis and
     visualization functionality for R package 'sigminer'.
 License: MIT + file LICENSE
-Depends: 
-    factoextra
 Imports: 
     cluster,
     data.table,
@@ -26,7 +24,9 @@ Imports:
 Suggests: 
     covr,
     doParallel,
+    factoextra,
     foreach,
+    ggpubr,
     scales,
     testthat
 LinkingTo: 

@@ -1,7 +1,8 @@
 utils::globalVariables(
   c(
     "sample", "start", "end", "lenVal", "segVal", "ID",
-    "chromosome", "%dopar%", "foreach", "Seqs", "too_large"
+    "chromosome", "%dopar%", "foreach", "Seqs", "too_large",
+    "segsize"
   )
 )
 

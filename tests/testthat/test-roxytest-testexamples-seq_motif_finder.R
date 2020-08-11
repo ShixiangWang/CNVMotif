@@ -11,7 +11,7 @@ test_that("Function sh_build_sub_matrix() @ L86", {
 })
 
 
-test_that("Function sh_get_score_matrix() @ L289", {
+test_that("Function sh_get_score_matrix() @ L305", {
   
   load(system.file("extdata", "toy_segTab.RData",
     package = "sigminer.helper", mustWork = TRUE
@@ -20,6 +20,9 @@ test_that("Function sh_get_score_matrix() @ L289", {
   x
   seqs <- sh_extract_seqs(x$dt)
   seqs
+  seqs2 <- sh_extract_seqs(x$dt, flexible_approach = TRUE)
+  seqs2
+  
   mat <- sh_get_score_matrix(seqs$keep, x$mat, verbose = TRUE)
   mat
   
@@ -55,17 +58,19 @@ test_that("Function sh_get_score_matrix() @ L289", {
   
   expect_is(x, "list")
   expect_is(seqs, "list")
+  expect_is(seqs2, "character")
   expect_is(mat, "matrix")
   expect_is(mat_b, "matrix")
+  expect_is(mat_c, "matrix")
+  expect_is(mat_d, "matrix")
   expect_equal(mat2, 120L - mat)
-  expect_equal(mat_d, max(mat_c) - mat_c)
   if (require("doParallel")) {
     expect_equal(y1, y2)
   }
 })
 
 
-test_that("Function show_seq_shape() @ L442", {
+test_that("Function show_seq_shape() @ L457", {
   
   p <- show_seq_shape(c("ADGHK"))
   p
@@ -77,7 +82,7 @@ test_that("Function show_seq_shape() @ L442", {
 })
 
 
-test_that("Function show_seq_logo() @ L558", {
+test_that("Function show_seq_logo() @ L573", {
   
   p1 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")))
   p1

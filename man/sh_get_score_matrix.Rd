@@ -17,7 +17,8 @@ sh_get_score_matrix(
 \arguments{
 \item{x}{a coding copy number sequence (valid letters are A to X).}
 
-\item{sub_mat}{a substitution matrix, each element indicates a score to plus.
+\item{sub_mat}{default is \code{NULL}, use longest common substring method.
+It can be a substitution matrix, each element indicates a score to plus.
 See \code{\link[=sh_build_sub_matrix]{sh_build_sub_matrix()}}.}
 
 \item{simple_version}{if \code{TRUE}, just use segmental copy number value.}
@@ -47,6 +48,9 @@ x <- sh_coding_segs(segTabs)
 x
 seqs <- sh_extract_seqs(x$dt)
 seqs
+seqs2 <- sh_extract_seqs(x$dt, flexible_approach = TRUE)
+seqs2
+
 mat <- sh_get_score_matrix(seqs$keep, x$mat, verbose = TRUE)
 mat
 

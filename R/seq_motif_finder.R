@@ -144,15 +144,24 @@ collapse_shift_seqs2 <- function(x, too_large, len = 5L, step = 1L) {
   }
 }
 
-collapse_local_seqs <- function(x, too_large) {
+collapse_local_seqs <- function(x, too_large, segsize, cutoff = 1e7) {
   z <- seq_along(x)[!too_large]
+  zL <- segsize[!too_large]
   if (length(z) == 0) {
     return(NULL)
   } else if (length(z) == 1) {
     return(x[z])
   } else {
-    z_list <- split(x[z], findInterval(z, z[diff(z) > 1] + 2L))
-    return(sapply(z_list, paste, collapse = "") %>% unlist() %>% as.character())
+    iv <- findInterval(z, z[diff(z) > 1] + 2L)
+    z_list <- split(x[z], iv)
+    zL_list <- split(zL, iv)
+    # Loop both segment copy number value and its length
+    purrr::map2(z_list, zL_list, function(x, y, cutoff) {
+      z <- getLocalSubstr(x, y, cutoff)
+      z <- setdiff(z, "")  # Remove blank string
+      z
+    }, cutoff = cutoff) %>% purrr::flatten_chr()
+    #return(sapply(z_list, paste, collapse = "") %>% unlist() %>% as.character())
   }
 }
 
@@ -179,13 +188,14 @@ sh_extract_seqs <- function(dt, len = 5L, step = 1L, local_cutoff = 1e7,
   stopifnot(data.table::is.data.table(dt))
 
   if (flexible_approach) {
-    message("Task: extract flexible-size sequences between segments with size less than specified cutoff.")
-    dt$too_large <- (dt$end - dt$start + 1L) >= local_cutoff
+    message("Task: extract flexible-size sequences between segments with total size less than specified cutoff.")
+    dt$segsize <- dt$end - dt$start + 1L
+    dt$too_large <- dt$segsize >= local_cutoff
     message("Total segments is ", nrow(dt), " and ", sum(dt$too_large), " of them with length >=", local_cutoff)
     message("Fraction: ", round(sum(dt$too_large) / nrow(dt), digits = 3))
-    dt <- dt[, c("ID", "Seqs", "too_large")]
+    dt <- dt[, c("ID", "Seqs", "too_large", "segsize")]
 
-    dt <- dt[, list(Seqs = collapse_local_seqs(Seqs, too_large)), by = "ID"]
+    dt <- dt[, list(Seqs = collapse_local_seqs(Seqs, too_large, segsize, cutoff = local_cutoff)), by = "ID"]
 
     if (return_dt) {
       return(dt)
@@ -244,6 +254,9 @@ sh_extract_seqs <- function(dt, len = 5L, step = 1L, local_cutoff = 1e7,
 #' x
 #' seqs <- sh_extract_seqs(x$dt)
 #' seqs
+#' seqs2 <- sh_extract_seqs(x$dt, flexible_approach = TRUE)
+#' seqs2
+#'
 #' mat <- sh_get_score_matrix(seqs$keep, x$mat, verbose = TRUE)
 #' mat
 #'
@@ -280,10 +293,12 @@ sh_extract_seqs <- function(dt, len = 5L, step = 1L, local_cutoff = 1e7,
 #' @testexamples
 #' expect_is(x, "list")
 #' expect_is(seqs, "list")
+#' expect_is(seqs2, "character")
 #' expect_is(mat, "matrix")
 #' expect_is(mat_b, "matrix")
+#' expect_is(mat_c, "matrix")
+#' expect_is(mat_d, "matrix")
 #' expect_equal(mat2, 120L - mat)
-#' expect_equal(mat_d, max(mat_c) - mat_c)
 #' if (require("doParallel")) {
 #'   expect_equal(y1, y2)
 #' }
@@ -299,7 +314,7 @@ sh_get_score_matrix <- function(x, sub_mat = NULL,
     message("  If dislike=TRUE, length of longest string - longest common substring is used.")
 
     y <- LCSMatrix(x, x, match = !dislike)
-    y <- data.table::fifelse(y > 0, 2^(y - 1), 0)
+    y <- ifelse(y > 0, 2^(y - 1), 0)
 
     rownames(y) <- colnames(y) <- x
 

@@ -33,3 +33,7 @@ getScoreMatrixRect <- function(indexMat1, indexMat2, subMat, like, verbose) {
     .Call(`_sigminer_helper_getScoreMatrixRect`, indexMat1, indexMat2, subMat, like, verbose)
 }
 
+getLocalSubstr <- function(x, y, cutoff) {
+    .Call(`_sigminer_helper_getLocalSubstr`, x, y, cutoff)
+}
+
