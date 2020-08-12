@@ -14,34 +14,34 @@ knitr::opts_chunk$set(
 )
 ```
 
-# sigminer.helper
+# CNVMotif
 
 <!-- badges: start -->
-![R-CMD-check](https://github.com/ShixiangWang/sigminer.helper/workflows/R-CMD-check/badge.svg)
-[![Codecov test coverage](https://codecov.io/gh/ShixiangWang/sigminer.helper/branch/master/graph/badge.svg)](https://codecov.io/gh/ShixiangWang/sigminer.helper?branch=master)
+![R-CMD-check](https://github.com/ShixiangWang/CNVMotif/workflows/R-CMD-check/badge.svg)
+[![Codecov test coverage](https://codecov.io/gh/ShixiangWang/CNVMotif/branch/master/graph/badge.svg)](https://codecov.io/gh/ShixiangWang/CNVMotif?branch=master)
 <!-- badges: end -->
 
-The goal of sigminer.helper is to ...
+The goal of CNVMotif is to explore, analyze and visualize the copy number variation (CNV) motifs in cancer genomics.
 
 ## Installation
 
-~~You can install the released version of {sigminer.helper} from [CRAN](https://CRAN.R-project.org) with:~~
+~~You can install the released version of {CNVMotif} from [CRAN](https://CRAN.R-project.org) with:~~
 
 ``` r
-install.packages("sigminer.helper")
+install.packages("CNVMotif")
 ```
 
 And the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ShixiangWang/sigminer.helper")
+devtools::install_github("ShixiangWang/CNVMotif")
 ```
 
 ## Example
 
 ```{r}
-library(sigminer.helper)
+library(CNVMotif)
 library(ggseqlogo)
 data(ggseqlogo_sample)
 

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Show Copy Number Sequence Shapes — show_seq_shape • sigminer.helper</title>
+<title>Show Copy Number Sequence Shapes — show_seq_shape • CNVMotif</title>
 
 
 <!-- jquery -->
@@ -71,7 +71,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">sigminer.helper</a>
+        <a class="navbar-link" href="../index.html">CNVMotif</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
       </span>
     </div>
@@ -172,10 +172,11 @@ free (<code>"free"</code>), or free in one dimension (<code>"free_x"</code>,
     <p>a <code>ggplot</code> object.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_shape</span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"ADGHK"</span>))
-<span class='no'>p</span></div><div class='img'><img src='show_seq_shape-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>a</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"ABCDE"</span>, <span class='st'>"AXFDP"</span>), <span class='kw'>b</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"KKDFH"</span>, <span class='st'>"GKDFM"</span>))
+    <pre class="examples"><span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_shape</span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"ADGHK"</span>))
+<span class='no'>p</span>
+<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>a</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"ABCDE"</span>, <span class='st'>"AXFDP"</span>), <span class='kw'>b</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"KKDFH"</span>, <span class='st'>"GKDFM"</span>))
 <span class='no'>p2</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_shape</span>(<span class='no'>x</span>)
-<span class='no'>p2</span></div><div class='img'><img src='show_seq_shape-2.png' alt='' width='700' height='433' /></div></pre>
+<span class='no'>p2</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

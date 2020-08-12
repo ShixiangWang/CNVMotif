@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Show Copy Number Sequence Logos — show_seq_logo • CNVMotif</title>
+<title>Estimate Optimal Number of Cluster for PAM Algorithm — cluster_pam_estimate • CNVMotif</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Show Copy Number Sequence Logos — show_seq_logo" />
-<meta property="og:description" content="Show Copy Number Sequence Logos" />
+<meta property="og:title" content="Estimate Optimal Number of Cluster for PAM Algorithm — cluster_pam_estimate" />
+<meta property="og:description" content="Estimate Optimal Number of Cluster for PAM Algorithm" />
 
 
 
@@ -103,23 +103,27 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Show Copy Number Sequence Logos</h1>
+    <h1>Estimate Optimal Number of Cluster for PAM Algorithm</h1>
     
-    <div class="hidden name"><code>show_seq_logo.Rd</code></div>
+    <div class="hidden name"><code>cluster_pam_estimate.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Show Copy Number Sequence Logos</p>
+    <p>Estimate Optimal Number of Cluster for PAM Algorithm</p>
     </div>
 
-    <pre class="usage"><span class='fu'>show_seq_logo</span>(
+    <pre class="usage"><span class='fu'>cluster_pam_estimate</span>(
   <span class='no'>x</span>,
-  <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"prob"</span>, <span class='st'>"bits"</span>),
-  <span class='kw'>simple_version</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>ncol</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>nrow</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>recode</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>indicator</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"silhouette"</span>, <span class='st'>"wss"</span>, <span class='st'>"gap_stat"</span>),
+  <span class='kw'>k.max</span> <span class='kw'>=</span> <span class='fl'>10</span>,
+  <span class='kw'>nboot</span> <span class='kw'>=</span> <span class='fl'>100</span>,
+  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/interactive.html'>interactive</a></span>(),
+  <span class='kw'>barfill</span> <span class='kw'>=</span> <span class='st'>"steelblue"</span>,
+  <span class='kw'>barcolor</span> <span class='kw'>=</span> <span class='st'>"steelblue"</span>,
+  <span class='kw'>linecolor</span> <span class='kw'>=</span> <span class='st'>"steelblue"</span>,
+  <span class='kw'>print.summary</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>FUNcluster</span> <span class='kw'>=</span> <span class='kw pkg'>cluster</span><span class='kw ns'>::</span><span class='no'><a href='https://rdrr.io/pkg/cluster/man/pam.html'>pam</a></span>,
+  <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>1234L</span>,
   <span class='no'>...</span>
 )</pre>
 
@@ -128,53 +132,68 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>a character vector of sequences or named list of sequences. All sequences must have same width.</p></td>
+      <td><p>a dissimilarity matrix.</p></td>
     </tr>
     <tr>
       <th>method</th>
-      <td><p>Height method, can be one of "bits" or "probability" (default: "bits")</p></td>
+      <td><p>the method to be used for estimating the optimal number of 
+clusters. Possible values are "silhouette" (for average silhouette width), 
+"wss" (for total within sum of square) and "gap_stat" (for gap statistics).</p></td>
     </tr>
     <tr>
-      <th>simple_version</th>
-      <td><p>if <code>TRUE</code>, just use segmental copy number value.</p></td>
+      <th>k.max</th>
+      <td><p>the maximum number of clusters to consider, must be at least two.</p></td>
     </tr>
     <tr>
-      <th>ncol</th>
-      <td><p>Number of columns, works only when <code>facet='wrap'</code>, see <code>facet_wrap</code></p></td>
+      <th>nboot</th>
+      <td><p>integer, number of Monte Carlo ("bootstrap") samples. Used only for determining the number of clusters 
+using gap statistic.</p></td>
     </tr>
     <tr>
-      <th>nrow</th>
-      <td><p>Number of rows, same as <code>ncol</code></p></td>
+      <th>verbose</th>
+      <td><p>logical value. If TRUE, the result of progress is printed.</p></td>
     </tr>
     <tr>
-      <th>recode</th>
-      <td><p>if <code>TRUE</code>, it will use default indicator or specified indicator to show the letters in
-the plot</p></td>
+      <th>barfill</th>
+      <td><p>fill color and outline color for bars</p></td>
     </tr>
     <tr>
-      <th>indicator</th>
-      <td><p>a named vector (like a dictory) to change letters one to one in the plot.</p></td>
+      <th>barcolor</th>
+      <td><p>fill color and outline color for bars</p></td>
+    </tr>
+    <tr>
+      <th>linecolor</th>
+      <td><p>color for lines</p></td>
+    </tr>
+    <tr>
+      <th>print.summary</th>
+      <td><p>logical value. If true, the optimal number of clusters 
+are printed in fviz_nbclust().</p></td>
+    </tr>
+    <tr>
+      <th>FUNcluster</th>
+      <td><p>a partitioning function which accepts as first argument a 
+(data) matrix like x, second argument, say k, k &gt;= 2, the number of 
+clusters desired, and returns a list with a component named cluster which 
+contains the grouping of observations. Allowed values include: kmeans,
+cluster::pam, cluster::clara, cluster::fanny, hcut, etc. This argument is
+not required when x is an output of the function 
+<code>NbClust::NbClust()</code>.</p></td>
+    </tr>
+    <tr>
+      <th>seed</th>
+      <td><p>random seed.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments passed to <code><a href='https://rdrr.io/pkg/ggseqlogo/man/geom_logo.html'>geom_logo</a></code></p></td>
+      <td><p>optionally further arguments for FUNcluster()</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a <code>ggplot</code> object</p>
+    <p>a <code>ggplot</code> object.</p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='no'>p1</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_logo</span>(<span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/split.html'>split</a></span>(<span class='no'>LETTERS</span>[<span class='fl'>1</span>:<span class='fl'>24</span>], <span class='fl'>1</span>:<span class='fl'>4</span>), <span class='kw'>function</span>(<span class='no'>x</span>) <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='no'>x</span>, <span class='kw'>collapse</span> <span class='kw'>=</span> <span class='st'>""</span>)))
-<span class='no'>p1</span>
-<span class='no'>p2</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_logo</span>(<span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/split.html'>split</a></span>(<span class='no'>LETTERS</span>[<span class='fl'>1</span>:<span class='fl'>24</span>], <span class='fl'>1</span>:<span class='fl'>4</span>), <span class='kw'>function</span>(<span class='no'>x</span>) <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='no'>x</span>, <span class='kw'>collapse</span> <span class='kw'>=</span> <span class='st'>""</span>)),
-  <span class='kw'>recode</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
-)
-<span class='no'>p2</span>
-<span class='no'>p3</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_logo</span>(<span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/split.html'>split</a></span>(<span class='no'>LETTERS</span>[<span class='fl'>1</span>:<span class='fl'>6</span>], <span class='fl'>1</span>:<span class='fl'>2</span>), <span class='kw'>function</span>(<span class='no'>x</span>) <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='no'>x</span>, <span class='kw'>collapse</span> <span class='kw'>=</span> <span class='st'>""</span>)),
-  <span class='kw'>simple_version</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
-)</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

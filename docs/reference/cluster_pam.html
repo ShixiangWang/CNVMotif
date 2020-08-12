@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Show Copy Number Sequence Logos — show_seq_logo • CNVMotif</title>
+<title>PAM Wrapper — cluster_pam • CNVMotif</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Show Copy Number Sequence Logos — show_seq_logo" />
-<meta property="og:description" content="Show Copy Number Sequence Logos" />
+<meta property="og:title" content="PAM Wrapper — cluster_pam" />
+<meta property="og:description" content="See factoextra::fviz_cluster() for visualization." />
 
 
 
@@ -103,78 +103,39 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Show Copy Number Sequence Logos</h1>
+    <h1>PAM Wrapper</h1>
     
-    <div class="hidden name"><code>show_seq_logo.Rd</code></div>
+    <div class="hidden name"><code>cluster_pam.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Show Copy Number Sequence Logos</p>
+    <p>See <code><a href='https://rdrr.io/pkg/factoextra/man/fviz_cluster.html'>factoextra::fviz_cluster()</a></code> for visualization.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>show_seq_logo</span>(
-  <span class='no'>x</span>,
-  <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"prob"</span>, <span class='st'>"bits"</span>),
-  <span class='kw'>simple_version</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>ncol</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>nrow</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>recode</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>indicator</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='no'>...</span>
-)</pre>
+    <pre class="usage"><span class='fu'>cluster_pam</span>(<span class='no'>x</span>, <span class='no'>k</span>, <span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>a character vector of sequences or named list of sequences. All sequences must have same width.</p></td>
+      <td><p>a dissimilarity matrix.</p></td>
     </tr>
     <tr>
-      <th>method</th>
-      <td><p>Height method, can be one of "bits" or "probability" (default: "bits")</p></td>
-    </tr>
-    <tr>
-      <th>simple_version</th>
-      <td><p>if <code>TRUE</code>, just use segmental copy number value.</p></td>
-    </tr>
-    <tr>
-      <th>ncol</th>
-      <td><p>Number of columns, works only when <code>facet='wrap'</code>, see <code>facet_wrap</code></p></td>
-    </tr>
-    <tr>
-      <th>nrow</th>
-      <td><p>Number of rows, same as <code>ncol</code></p></td>
-    </tr>
-    <tr>
-      <th>recode</th>
-      <td><p>if <code>TRUE</code>, it will use default indicator or specified indicator to show the letters in
-the plot</p></td>
-    </tr>
-    <tr>
-      <th>indicator</th>
-      <td><p>a named vector (like a dictory) to change letters one to one in the plot.</p></td>
+      <th>k</th>
+      <td><p>positive integer specifying the number of clusters, less than
+    the number of observations.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments passed to <code><a href='https://rdrr.io/pkg/ggseqlogo/man/geom_logo.html'>geom_logo</a></code></p></td>
+      <td><p>other parameters passing to <a href='https://rdrr.io/pkg/cluster/man/pam.html'>cluster::pam</a>.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a <code>ggplot</code> object</p>
+    <p>a PAM clustering result object.</p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='no'>p1</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_logo</span>(<span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/split.html'>split</a></span>(<span class='no'>LETTERS</span>[<span class='fl'>1</span>:<span class='fl'>24</span>], <span class='fl'>1</span>:<span class='fl'>4</span>), <span class='kw'>function</span>(<span class='no'>x</span>) <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='no'>x</span>, <span class='kw'>collapse</span> <span class='kw'>=</span> <span class='st'>""</span>)))
-<span class='no'>p1</span>
-<span class='no'>p2</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_logo</span>(<span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/split.html'>split</a></span>(<span class='no'>LETTERS</span>[<span class='fl'>1</span>:<span class='fl'>24</span>], <span class='fl'>1</span>:<span class='fl'>4</span>), <span class='kw'>function</span>(<span class='no'>x</span>) <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='no'>x</span>, <span class='kw'>collapse</span> <span class='kw'>=</span> <span class='st'>""</span>)),
-  <span class='kw'>recode</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
-)
-<span class='no'>p2</span>
-<span class='no'>p3</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_logo</span>(<span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/split.html'>split</a></span>(<span class='no'>LETTERS</span>[<span class='fl'>1</span>:<span class='fl'>6</span>], <span class='fl'>1</span>:<span class='fl'>2</span>), <span class='kw'>function</span>(<span class='no'>x</span>) <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='no'>x</span>, <span class='kw'>collapse</span> <span class='kw'>=</span> <span class='st'>""</span>)),
-  <span class='kw'>simple_version</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
-)</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

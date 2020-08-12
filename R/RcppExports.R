@@ -2,38 +2,38 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 LCS <- function(x, y) {
-    .Call(`_sigminer_helper_LCS`, x, y)
+    .Call(`_CNVMotif_LCS`, x, y)
 }
 
 LCSMatrix <- function(x, y, match) {
-    .Call(`_sigminer_helper_LCSMatrix`, x, y, match)
+    .Call(`_CNVMotif_LCSMatrix`, x, y, match)
 }
 
 pairScoreVector <- function(x, y, x_max, y_max) {
-    .Call(`_sigminer_helper_pairScoreVector`, x, y, x_max, y_max)
+    .Call(`_CNVMotif_pairScoreVector`, x, y, x_max, y_max)
 }
 
 pairScoreMatrix <- function(x, y, x_max, y_max) {
-    .Call(`_sigminer_helper_pairScoreMatrix`, x, y, x_max, y_max)
+    .Call(`_CNVMotif_pairScoreMatrix`, x, y, x_max, y_max)
 }
 
 pairScoreSimpleVector <- function(x, y, max) {
-    .Call(`_sigminer_helper_pairScoreSimpleVector`, x, y, max)
+    .Call(`_CNVMotif_pairScoreSimpleVector`, x, y, max)
 }
 
 pairScoreSimpleMatrix <- function(x, y, max) {
-    .Call(`_sigminer_helper_pairScoreSimpleMatrix`, x, y, max)
+    .Call(`_CNVMotif_pairScoreSimpleMatrix`, x, y, max)
 }
 
 getScoreMatrix <- function(indexMat, subMat, bSize, like, verbose) {
-    .Call(`_sigminer_helper_getScoreMatrix`, indexMat, subMat, bSize, like, verbose)
+    .Call(`_CNVMotif_getScoreMatrix`, indexMat, subMat, bSize, like, verbose)
 }
 
 getScoreMatrixRect <- function(indexMat1, indexMat2, subMat, like, verbose) {
-    .Call(`_sigminer_helper_getScoreMatrixRect`, indexMat1, indexMat2, subMat, like, verbose)
+    .Call(`_CNVMotif_getScoreMatrixRect`, indexMat1, indexMat2, subMat, like, verbose)
 }
 
 getLocalSubstr <- function(x, y, cutoff) {
-    .Call(`_sigminer_helper_getLocalSubstr`, x, y, cutoff)
+    .Call(`_CNVMotif_getLocalSubstr`, x, y, cutoff)
 }
 

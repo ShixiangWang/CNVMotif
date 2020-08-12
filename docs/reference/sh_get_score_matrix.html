@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Get Copy Number Sequence Similarity or Distance Matrix — sh_get_score_matrix • sigminer.helper</title>
+<title>Get Copy Number Sequence Similarity or Distance Matrix — sh_get_score_matrix • CNVMotif</title>
 
 
 <!-- jquery -->
@@ -71,7 +71,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">sigminer.helper</a>
+        <a class="navbar-link" href="../index.html">CNVMotif</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
       </span>
     </div>
@@ -131,7 +131,8 @@
     </tr>
     <tr>
       <th>sub_mat</th>
-      <td><p>a substitution matrix, each element indicates a score to plus.
+      <td><p>default is <code>NULL</code>, use longest common substring method.
+It can be a substitution matrix, each element indicates a score to plus.
 See <code><a href='sh_build_sub_matrix.html'>sh_build_sub_matrix()</a></code>.</p></td>
     </tr>
     <tr>
@@ -164,149 +165,33 @@ cores typically do not speed up the computation.</p></td>
     <p>a score matrix.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/load.html'>load</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/system.file.html'>system.file</a></span>(<span class='st'>"extdata"</span>, <span class='st'>"toy_segTab.RData"</span>,
-  <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"sigminer.helper"</span>, <span class='kw'>mustWork</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+    <pre class="examples"><span class='fu'><a href='https://rdrr.io/r/base/load.html'>load</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/system.file.html'>system.file</a></span>(<span class='st'>"extdata"</span>, <span class='st'>"toy_segTab.RData"</span>,
+  <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"CNVMotif"</span>, <span class='kw'>mustWork</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
 ))
 <span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sh_coding_segs.html'>sh_coding_segs</a></span>(<span class='no'>segTabs</span>)
-<span class='no'>x</span></div><div class='output co'>#&gt; $dt
-#&gt;                            sample chromosome     start       end segVal lenVal
-#&gt;   1: TCGA-05-4417-01A-22D-1854-01          1   3218923 116319008      2      4
-#&gt;   2: TCGA-05-4417-01A-22D-1854-01          1 116324707 120523902      1      3
-#&gt;   3: TCGA-05-4417-01A-22D-1854-01          1 149879545 161395555      4      4
-#&gt;   4: TCGA-05-4417-01A-22D-1854-01          1 161398414 247812431      4      4
-#&gt;   5: TCGA-05-4417-01A-22D-1854-01          2    499482 117951931      3      4
-#&gt;  ---                                                                          
-#&gt; 463: TCGA-DF-A2KN-01A-11D-A17U-01         22  17423930  29440692      2      4
-#&gt; 464: TCGA-DF-A2KN-01A-11D-A17U-01         22  29442666  29805407      3      2
-#&gt; 465: TCGA-DF-A2KN-01A-11D-A17U-01         22  29824523  47176707      2      4
-#&gt; 466: TCGA-DF-A2KN-01A-11D-A17U-01         22  47184783  47249551      2      2
-#&gt; 467: TCGA-DF-A2KN-01A-11D-A17U-01         22  47258179  49331012      2      3
-#&gt;                                   ID Seqs
-#&gt;   1:  TCGA-05-4417-01A-22D-1854-01:1    L
-#&gt;   2:  TCGA-05-4417-01A-22D-1854-01:1    G
-#&gt;   3:  TCGA-05-4417-01A-22D-1854-01:1    T
-#&gt;   4:  TCGA-05-4417-01A-22D-1854-01:1    T
-#&gt;   5:  TCGA-05-4417-01A-22D-1854-01:2    P
-#&gt;  ---                                     
-#&gt; 463: TCGA-DF-A2KN-01A-11D-A17U-01:22    L
-#&gt; 464: TCGA-DF-A2KN-01A-11D-A17U-01:22    N
-#&gt; 465: TCGA-DF-A2KN-01A-11D-A17U-01:22    L
-#&gt; 466: TCGA-DF-A2KN-01A-11D-A17U-01:22    J
-#&gt; 467: TCGA-DF-A2KN-01A-11D-A17U-01:22    K
-#&gt; 
-#&gt; $map
-#&gt;  10  20  30  40  11  21  31  41  12  22  32  42  13  23  33  43  14  24  34  44 
-#&gt; "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" 
-#&gt;  15  25  35  45 
-#&gt; "U" "V" "W" "X" 
-#&gt; 
-#&gt; $mat
-#&gt;     A   B   C   D   E   F   G   H   I   J   K   L   M   N   O   P   Q   R   S
-#&gt; A  24  18  12   6  20  15  10   5  -8  -6  -4  -2 -12  -9  -6  -3 -16 -12  -8
-#&gt; B  18  24  18  12  15  20  15  10  -6  -8  -6  -4  -9 -12  -9  -6 -12 -16 -12
-#&gt; C  12  18  24  18  10  15  20  15  -4  -6  -8  -6  -6  -9 -12  -9  -8 -12 -16
-#&gt; D   6  12  18  24   5  10  15  20  -2  -4  -6  -8  -3  -6  -9 -12  -4  -8 -12
-#&gt; E  20  15  10   5  24  18  12   6  -4  -3  -2  -1  -8  -6  -4  -2 -12  -9  -6
-#&gt; F  15  20  15  10  18  24  18  12  -3  -4  -3  -2  -6  -8  -6  -4  -9 -12  -9
-#&gt; G  10  15  20  15  12  18  24  18  -2  -3  -4  -3  -4  -6  -8  -6  -6  -9 -12
-#&gt; H   5  10  15  20   6  12  18  24  -1  -2  -3  -4  -2  -4  -6  -8  -3  -6  -9
-#&gt; I  -8  -6  -4  -2  -4  -3  -2  -1  24  18  12   6  -4  -3  -2  -1  -8  -6  -4
-#&gt; J  -6  -8  -6  -4  -3  -4  -3  -2  18  24  18  12  -3  -4  -3  -2  -6  -8  -6
-#&gt; K  -4  -6  -8  -6  -2  -3  -4  -3  12  18  24  18  -2  -3  -4  -3  -4  -6  -8
-#&gt; L  -2  -4  -6  -8  -1  -2  -3  -4   6  12  18  24  -1  -2  -3  -4  -2  -4  -6
-#&gt; M -12  -9  -6  -3  -8  -6  -4  -2  -4  -3  -2  -1  24  18  12   6  20  15  10
-#&gt; N  -9 -12  -9  -6  -6  -8  -6  -4  -3  -4  -3  -2  18  24  18  12  15  20  15
-#&gt; O  -6  -9 -12  -9  -4  -6  -8  -6  -2  -3  -4  -3  12  18  24  18  10  15  20
-#&gt; P  -3  -6  -9 -12  -2  -4  -6  -8  -1  -2  -3  -4   6  12  18  24   5  10  15
-#&gt; Q -16 -12  -8  -4 -12  -9  -6  -3  -8  -6  -4  -2  20  15  10   5  24  18  12
-#&gt; R -12 -16 -12  -8  -9 -12  -9  -6  -6  -8  -6  -4  15  20  15  10  18  24  18
-#&gt; S  -8 -12 -16 -12  -6  -9 -12  -9  -4  -6  -8  -6  10  15  20  15  12  18  24
-#&gt; T  -4  -8 -12 -16  -3  -6  -9 -12  -2  -4  -6  -8   5  10  15  20   6  12  18
-#&gt; U -20 -15 -10  -5 -16 -12  -8  -4 -12  -9  -6  -3  16  12   8   4  20  15  10
-#&gt; V -15 -20 -15 -10 -12 -16 -12  -8  -9 -12  -9  -6  12  16  12   8  15  20  15
-#&gt; W -10 -15 -20 -15  -8 -12 -16 -12  -6  -9 -12  -9   8  12  16  12  10  15  20
-#&gt; X  -5 -10 -15 -20  -4  -8 -12 -16  -3  -6  -9 -12   4   8  12  16   5  10  15
-#&gt;     T   U   V   W   X
-#&gt; A  -4 -20 -15 -10  -5
-#&gt; B  -8 -15 -20 -15 -10
-#&gt; C -12 -10 -15 -20 -15
-#&gt; D -16  -5 -10 -15 -20
-#&gt; E  -3 -16 -12  -8  -4
-#&gt; F  -6 -12 -16 -12  -8
-#&gt; G  -9  -8 -12 -16 -12
-#&gt; H -12  -4  -8 -12 -16
-#&gt; I  -2 -12  -9  -6  -3
-#&gt; J  -4  -9 -12  -9  -6
-#&gt; K  -6  -6  -9 -12  -9
-#&gt; L  -8  -3  -6  -9 -12
-#&gt; M   5  16  12   8   4
-#&gt; N  10  12  16  12   8
-#&gt; O  15   8  12  16  12
-#&gt; P  20   4   8  12  16
-#&gt; Q   6  20  15  10   5
-#&gt; R  12  15  20  15  10
-#&gt; S  18  10  15  20  15
-#&gt; T  24   5  10  15  20
-#&gt; U   5  24  18  12   6
-#&gt; V  10  18  24  18  12
-#&gt; W  15  12  18  24  18
-#&gt; X  20   6  12  18  24
-#&gt; </div><div class='input'><span class='no'>seqs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sh_extract_seqs.html'>sh_extract_seqs</a></span>(<span class='no'>x</span>$<span class='no'>dt</span>)</div><div class='output co'>#&gt; <span class='message'>Task: extract specified-size sequences with input 'len' and 'step' under segment size cutoff.</span></div><div class='output co'>#&gt; <span class='message'>Total segments is 467 and 343 of them with length &gt;=1e+07</span></div><div class='output co'>#&gt; <span class='message'>Fraction: 0.734</span></div><div class='input'><span class='no'>seqs</span></div><div class='output co'>#&gt; $keep
-#&gt; [1] "CFBFC" "FBFCG" "GJGKH" "HCFBF" "JGJGK" "OFOGO"
-#&gt; 
-#&gt; $drop
-#&gt;  [1] "B"    "BH"   "CFC"  "CHB"  "EK"   "EL"   "F"    "G"    "GJFK" "H"   
-#&gt; [11] "HBBC" "I"    "J"    "JK"   "JL"   "JNK"  "K"    "KGKG" "KHJ"  "KJ"  
-#&gt; [21] "KN"   "L"    "LJ"   "N"    "O"    "P"    "PSO"  "R"    "S"    "SKG" 
-#&gt; [31] "T"    "TWKS" "V"    "VW"   "W"    "WS"  
-#&gt; </div><div class='input'><span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>, <span class='no'>x</span>$<span class='no'>mat</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; <span class='message'>Task: score equal-size paired strings with substitution matrix.</span></div><div class='output co'>#&gt; Handling index pair (1,1).
-#&gt; Handling index pair (2,1).
-#&gt; Handling index pair (2,2).
-#&gt; Handling index pair (3,1).
-#&gt; Handling index pair (3,2).
-#&gt; Handling index pair (3,3).
-#&gt; Handling index pair (4,1).
-#&gt; Handling index pair (4,2).
-#&gt; Handling index pair (4,3).
-#&gt; Handling index pair (4,4).
-#&gt; Handling index pair (5,1).
-#&gt; Handling index pair (5,2).
-#&gt; Handling index pair (5,3).
-#&gt; Handling index pair (5,4).
-#&gt; Handling index pair (5,5).
-#&gt; Handling index pair (6,1).
-#&gt; Handling index pair (6,2).
-#&gt; Handling index pair (6,3).
-#&gt; Handling index pair (6,4).
-#&gt; Handling index pair (6,5).
-#&gt; Handling index pair (6,6).</div><div class='input'><span class='no'>mat</span></div><div class='output co'>#&gt;       CFBFC FBFCG GJGKH HCFBF JGJGK OFOGO
-#&gt; CFBFC   120    90    43    85    14     9
-#&gt; FBFCG    90   120    38    90    23    20
-#&gt; GJGKH    43    38   120    36   -16   -30
-#&gt; HCFBF    85    90    36   120    26    12
-#&gt; JGJGK    14    23   -16    26   120    32
-#&gt; OFOGO     9    20   -30    12    32   120</div><div class='input'>
-<span class='no'>mat2</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>, <span class='no'>x</span>$<span class='no'>mat</span>, <span class='kw'>dislike</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; <span class='message'>Task: score equal-size paired strings with substitution matrix.</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/identical.html'>identical</a></span>(<span class='no'>mat2</span>, <span class='fl'>120L</span> - <span class='no'>mat</span>)</div><div class='output co'>#&gt; [1] TRUE</div><div class='input'>
-<span class='no'>mat_b</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>, <span class='no'>x</span>$<span class='no'>mat</span>, <span class='kw'>block_size</span> <span class='kw'>=</span> <span class='fl'>2L</span>)</div><div class='output co'>#&gt; <span class='message'>Task: score equal-size paired strings with substitution matrix.</span></div><div class='input'><span class='co'>## block1 represents the first 2 sequences</span>
+<span class='no'>x</span>
+<span class='no'>seqs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sh_extract_seqs.html'>sh_extract_seqs</a></span>(<span class='no'>x</span>$<span class='no'>dt</span>)
+<span class='no'>seqs</span>
+<span class='no'>seqs2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sh_extract_seqs.html'>sh_extract_seqs</a></span>(<span class='no'>x</span>$<span class='no'>dt</span>, <span class='kw'>flexible_approach</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+<span class='no'>seqs2</span>
+
+<span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>, <span class='no'>x</span>$<span class='no'>mat</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+<span class='no'>mat</span>
+
+<span class='no'>mat2</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>, <span class='no'>x</span>$<span class='no'>mat</span>, <span class='kw'>dislike</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/identical.html'>identical</a></span>(<span class='no'>mat2</span>, <span class='fl'>120L</span> - <span class='no'>mat</span>)
+
+<span class='no'>mat_b</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>, <span class='no'>x</span>$<span class='no'>mat</span>, <span class='kw'>block_size</span> <span class='kw'>=</span> <span class='fl'>2L</span>)
+<span class='co'>## block1 represents the first 2 sequences</span>
 <span class='co'>## block2 represents the 3rd, 4th sequences</span>
 <span class='co'>## ...</span>
-<span class='no'>mat_b</span></div><div class='output co'>#&gt;        block1 block2 block3
-#&gt; block1    105     64     17
-#&gt; block2     64     78     -2
-#&gt; block3     17     -2     76</div><div class='input'>
-<span class='no'>mat_c</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>)</div><div class='output co'>#&gt; <span class='message'>Task: score paired strings with longest common substring method.</span></div><div class='output co'>#&gt; <span class='message'>Final score = 2^(LCS length - 1), for dislike=TRUE, max score is used to substract.</span></div><div class='input'><span class='no'>mat_c</span></div><div class='output co'>#&gt;       CFBFC FBFCG GJGKH HCFBF JGJGK OFOGO
-#&gt; CFBFC    16     8     0     8     0     1
-#&gt; FBFCG     8    16     1     4     1     1
-#&gt; GJGKH     0     1    16     1     8     1
-#&gt; HCFBF     8     4     1    16     0     1
-#&gt; JGJGK     0     1     8     0    16     1
-#&gt; OFOGO     1     1     1     1     1    16</div><div class='input'><span class='no'>mat_d</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>, <span class='kw'>dislike</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; <span class='message'>Task: score paired strings with longest common substring method.</span></div><div class='output co'>#&gt; <span class='message'>Final score = 2^(LCS length - 1), for dislike=TRUE, max score is used to substract.</span></div><div class='input'><span class='no'>mat_d</span></div><div class='output co'>#&gt;       CFBFC FBFCG GJGKH HCFBF JGJGK OFOGO
-#&gt; CFBFC     0     8    16     8    16    15
-#&gt; FBFCG     8     0    15    12    15    15
-#&gt; GJGKH    16    15     0    15     8    15
-#&gt; HCFBF     8    12    15     0    16    15
-#&gt; JGJGK    16    15     8    16     0    15
-#&gt; OFOGO    15    15    15    15    15     0</div><div class='input'><span class='co'># \donttest{</span>
+<span class='no'>mat_b</span>
+
+<span class='no'>mat_c</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>)
+<span class='no'>mat_c</span>
+<span class='no'>mat_d</span> <span class='kw'>&lt;-</span> <span class='fu'>sh_get_score_matrix</span>(<span class='no'>seqs</span>$<span class='no'>keep</span>, <span class='kw'>dislike</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+<span class='no'>mat_d</span>
+<span class='co'># \donttest{</span>
 <span class='kw'>if</span> (<span class='fu'><a href='https://rdrr.io/r/base/library.html'>require</a></span>(<span class='st'>"doParallel"</span>)) {
   <span class='no'>mock_seqs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span>(<span class='fl'>1</span>:<span class='fl'>10000</span>, <span class='kw'>function</span>(<span class='no'>x</span>) {
     <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/sample.html'>sample</a></span>(<span class='no'>LETTERS</span>[<span class='fl'>1</span>:<span class='fl'>24</span>], <span class='fl'>5</span>, <span class='kw'>replace</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>), <span class='kw'>collapse</span> <span class='kw'>=</span> <span class='st'>""</span>)
@@ -321,8 +206,8 @@ cores typically do not speed up the computation.</p></td>
   )
 
   <span class='fu'><a href='https://rdrr.io/r/base/all.equal.html'>all.equal</a></span>(<span class='no'>y1</span>, <span class='no'>y2</span>)
-}</div><div class='output co'>#&gt; <span class='message'>Loading required package: doParallel</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: foreach</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: iterators</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: parallel</span></div><div class='output co'>#&gt; <span class='message'>Task: score equal-size paired strings with substitution matrix.</span></div><div class='output co'>#&gt; <span class='message'>Task: score equal-size paired strings with substitution matrix.</span></div><div class='output co'>#&gt; [1] TRUE</div><div class='input'># }
-</div></pre>
+}
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

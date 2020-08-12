@@ -42,7 +42,7 @@ Get Copy Number Sequence Similarity or Distance Matrix
 }
 \examples{
 load(system.file("extdata", "toy_segTab.RData",
-  package = "sigminer.helper", mustWork = TRUE
+  package = "CNVMotif", mustWork = TRUE
 ))
 x <- sh_coding_segs(segTabs)
 x

@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // LCS
 int LCS(std::string x, std::string y);
-RcppExport SEXP _sigminer_helper_LCS(SEXP xSEXP, SEXP ySEXP) {
+RcppExport SEXP _CNVMotif_LCS(SEXP xSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,7 @@ END_RCPP
 }
 // LCSMatrix
 IntegerMatrix LCSMatrix(StringVector x, StringVector y, bool match);
-RcppExport SEXP _sigminer_helper_LCSMatrix(SEXP xSEXP, SEXP ySEXP, SEXP matchSEXP) {
+RcppExport SEXP _CNVMotif_LCSMatrix(SEXP xSEXP, SEXP ySEXP, SEXP matchSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,7 +32,7 @@ END_RCPP
 }
 // pairScoreVector
 int pairScoreVector(NumericVector x, NumericVector y, int x_max, int y_max);
-RcppExport SEXP _sigminer_helper_pairScoreVector(SEXP xSEXP, SEXP ySEXP, SEXP x_maxSEXP, SEXP y_maxSEXP) {
+RcppExport SEXP _CNVMotif_pairScoreVector(SEXP xSEXP, SEXP ySEXP, SEXP x_maxSEXP, SEXP y_maxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -46,7 +46,7 @@ END_RCPP
 }
 // pairScoreMatrix
 NumericMatrix pairScoreMatrix(NumericMatrix x, NumericMatrix y, int x_max, int y_max);
-RcppExport SEXP _sigminer_helper_pairScoreMatrix(SEXP xSEXP, SEXP ySEXP, SEXP x_maxSEXP, SEXP y_maxSEXP) {
+RcppExport SEXP _CNVMotif_pairScoreMatrix(SEXP xSEXP, SEXP ySEXP, SEXP x_maxSEXP, SEXP y_maxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -60,7 +60,7 @@ END_RCPP
 }
 // pairScoreSimpleVector
 int pairScoreSimpleVector(NumericVector x, NumericVector y, int max);
-RcppExport SEXP _sigminer_helper_pairScoreSimpleVector(SEXP xSEXP, SEXP ySEXP, SEXP maxSEXP) {
+RcppExport SEXP _CNVMotif_pairScoreSimpleVector(SEXP xSEXP, SEXP ySEXP, SEXP maxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -73,7 +73,7 @@ END_RCPP
 }
 // pairScoreSimpleMatrix
 NumericMatrix pairScoreSimpleMatrix(NumericMatrix x, NumericMatrix y, int max);
-RcppExport SEXP _sigminer_helper_pairScoreSimpleMatrix(SEXP xSEXP, SEXP ySEXP, SEXP maxSEXP) {
+RcppExport SEXP _CNVMotif_pairScoreSimpleMatrix(SEXP xSEXP, SEXP ySEXP, SEXP maxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -86,7 +86,7 @@ END_RCPP
 }
 // getScoreMatrix
 IntegerMatrix getScoreMatrix(IntegerMatrix indexMat, IntegerMatrix subMat, int bSize, bool like, bool verbose);
-RcppExport SEXP _sigminer_helper_getScoreMatrix(SEXP indexMatSEXP, SEXP subMatSEXP, SEXP bSizeSEXP, SEXP likeSEXP, SEXP verboseSEXP) {
+RcppExport SEXP _CNVMotif_getScoreMatrix(SEXP indexMatSEXP, SEXP subMatSEXP, SEXP bSizeSEXP, SEXP likeSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -101,7 +101,7 @@ END_RCPP
 }
 // getScoreMatrixRect
 IntegerMatrix getScoreMatrixRect(IntegerMatrix indexMat1, IntegerMatrix indexMat2, IntegerMatrix subMat, bool like, bool verbose);
-RcppExport SEXP _sigminer_helper_getScoreMatrixRect(SEXP indexMat1SEXP, SEXP indexMat2SEXP, SEXP subMatSEXP, SEXP likeSEXP, SEXP verboseSEXP) {
+RcppExport SEXP _CNVMotif_getScoreMatrixRect(SEXP indexMat1SEXP, SEXP indexMat2SEXP, SEXP subMatSEXP, SEXP likeSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -116,7 +116,7 @@ END_RCPP
 }
 // getLocalSubstr
 CharacterVector getLocalSubstr(CharacterVector x, NumericVector y, double cutoff);
-RcppExport SEXP _sigminer_helper_getLocalSubstr(SEXP xSEXP, SEXP ySEXP, SEXP cutoffSEXP) {
+RcppExport SEXP _CNVMotif_getLocalSubstr(SEXP xSEXP, SEXP ySEXP, SEXP cutoffSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -129,19 +129,19 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_sigminer_helper_LCS", (DL_FUNC) &_sigminer_helper_LCS, 2},
-    {"_sigminer_helper_LCSMatrix", (DL_FUNC) &_sigminer_helper_LCSMatrix, 3},
-    {"_sigminer_helper_pairScoreVector", (DL_FUNC) &_sigminer_helper_pairScoreVector, 4},
-    {"_sigminer_helper_pairScoreMatrix", (DL_FUNC) &_sigminer_helper_pairScoreMatrix, 4},
-    {"_sigminer_helper_pairScoreSimpleVector", (DL_FUNC) &_sigminer_helper_pairScoreSimpleVector, 3},
-    {"_sigminer_helper_pairScoreSimpleMatrix", (DL_FUNC) &_sigminer_helper_pairScoreSimpleMatrix, 3},
-    {"_sigminer_helper_getScoreMatrix", (DL_FUNC) &_sigminer_helper_getScoreMatrix, 5},
-    {"_sigminer_helper_getScoreMatrixRect", (DL_FUNC) &_sigminer_helper_getScoreMatrixRect, 5},
-    {"_sigminer_helper_getLocalSubstr", (DL_FUNC) &_sigminer_helper_getLocalSubstr, 3},
+    {"_CNVMotif_LCS", (DL_FUNC) &_CNVMotif_LCS, 2},
+    {"_CNVMotif_LCSMatrix", (DL_FUNC) &_CNVMotif_LCSMatrix, 3},
+    {"_CNVMotif_pairScoreVector", (DL_FUNC) &_CNVMotif_pairScoreVector, 4},
+    {"_CNVMotif_pairScoreMatrix", (DL_FUNC) &_CNVMotif_pairScoreMatrix, 4},
+    {"_CNVMotif_pairScoreSimpleVector", (DL_FUNC) &_CNVMotif_pairScoreSimpleVector, 3},
+    {"_CNVMotif_pairScoreSimpleMatrix", (DL_FUNC) &_CNVMotif_pairScoreSimpleMatrix, 3},
+    {"_CNVMotif_getScoreMatrix", (DL_FUNC) &_CNVMotif_getScoreMatrix, 5},
+    {"_CNVMotif_getScoreMatrixRect", (DL_FUNC) &_CNVMotif_getScoreMatrixRect, 5},
+    {"_CNVMotif_getLocalSubstr", (DL_FUNC) &_CNVMotif_getLocalSubstr, 3},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_sigminer_helper(DllInfo *dll) {
+RcppExport void R_init_CNVMotif(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

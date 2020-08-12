@@ -11,7 +11,7 @@
 NULL
 
 ## usethis namespace: start
-#' @useDynLib sigminer.helper, .registration = TRUE
+#' @useDynLib CNVMotif, .registration = TRUE
 ## usethis namespace: end
 NULL
 

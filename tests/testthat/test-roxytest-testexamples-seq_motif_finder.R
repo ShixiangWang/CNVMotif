@@ -14,7 +14,7 @@ test_that("Function sh_build_sub_matrix() @ L86", {
 test_that("Function sh_get_score_matrix() @ L305", {
   
   load(system.file("extdata", "toy_segTab.RData",
-    package = "sigminer.helper", mustWork = TRUE
+    package = "CNVMotif", mustWork = TRUE
   ))
   x <- sh_coding_segs(segTabs)
   x

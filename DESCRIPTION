@@ -1,5 +1,6 @@
-Package: sigminer.helper
-Title: Extra Functionality for Package 'sigminer'
+Package: CNVMotif
+Title: Explore, Analyze and Visualize Catalogs and Patterns of
+    Copy Number Variation in Cancer Genomics
 Version: 0.1.0
 Date: 2020-07-16
 Authors@R: 
@@ -8,8 +9,8 @@ Authors@R:
            role = c("aut", "cre"),
            email = "w_shixiang@163.com",
            comment = c(ORCID = "0000-0001-9855-7357"))
-Description: Provides extra operation, analysis and
-    visualization functionality for R package 'sigminer'.
+Description: Provides functionality for exploring, analyzing and
+    visualizing the copy number variation (CNV) motifs in cancer genomics.
 License: MIT + file LICENSE
 Imports: 
     cluster,

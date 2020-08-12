@@ -1,4 +1,4 @@
 library(testthat)
-library(sigminer.helper)
+library(CNVMotif)
 
-test_check("sigminer.helper")
+test_check("CNVMotif")

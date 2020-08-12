@@ -248,7 +248,7 @@ sh_extract_seqs <- function(dt, len = 5L, step = 1L, local_cutoff = 1e7,
 #'
 #' @examples
 #' load(system.file("extdata", "toy_segTab.RData",
-#'   package = "sigminer.helper", mustWork = TRUE
+#'   package = "CNVMotif", mustWork = TRUE
 #' ))
 #' x <- sh_coding_segs(segTabs)
 #' x
@@ -399,7 +399,7 @@ sh_get_score_matrix <- function(x, sub_mat = NULL,
       y <- foreach::foreach(
         i = seq_along(grp_list),
         .combine = "cbind",
-        .packages = "sigminer.helper",
+        .packages = "CNVMotif",
         # .export = c("m", "grp_list", "sub_mat", "verbose", "getScoreMatrixRect"),
         .export = c("getScoreMatrixRect"),
         .verbose = FALSE
