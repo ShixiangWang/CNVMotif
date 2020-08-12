@@ -13,3 +13,14 @@ col2hex <- function(col, alpha) grDevices::rgb(t(grDevices::col2rgb(col)), alpha
 
 # https://stackoverflow.com/questions/3318333/split-a-vector-into-chunks-in-r
 chunk2 <- function(x, n) split(x, cut(seq_along(x), n, labels = FALSE))
+
+# Call un-exported functions from other packages
+`%:::%` <- function(pkg, fun) {
+  get(fun,
+      envir = asNamespace(pkg),
+      inherits = FALSE
+  )
+}
+
+.get_ave_sil_width <- `%:::%`("factoextra", ".get_ave_sil_width")
+.get_withinSS <- `%:::%`("factoextra", ".get_withinSS")

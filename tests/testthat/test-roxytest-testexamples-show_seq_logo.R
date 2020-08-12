@@ -2,7 +2,7 @@
 
 context("File R/show_seq_logo.R: @testexamples")
 
-test_that("Function show_seq_logo() @ L24", {
+test_that("Function show_seq_logo() @ L26", {
   
   p1 <- show_seq_logo(sapply(split(LETTERS[1:24], 1:4), function(x) paste0(x, collapse = "")))
   p1
@@ -16,5 +16,7 @@ test_that("Function show_seq_logo() @ L24", {
   expect_is(p1, "ggplot")
   expect_is(p2, "ggplot")
   expect_is(p3, "ggplot")
+  expect_error(show_seq_logo(sapply(split(LETTERS[1:24], 1:4),
+    function(x) paste0(x, collapse = "")), indicator = 1:24, recode = TRUE))
 })
 

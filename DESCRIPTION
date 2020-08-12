@@ -16,6 +16,7 @@ Imports:
     cluster,
     data.table,
     dplyr,
+    factoextra,
     ggplot2,
     ggseqlogo,
     magrittr,
@@ -25,7 +26,6 @@ Imports:
 Suggests: 
     covr,
     doParallel,
-    factoextra,
     foreach,
     ggpubr,
     scales,

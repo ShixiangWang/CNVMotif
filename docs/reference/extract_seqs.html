@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Show Copy Number Sequence Shapes — show_seq_shape • CNVMotif</title>
+<title>Extract Pasted Sequences from Each Chromosome — extract_seqs • CNVMotif</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,9 @@
 
 
 
-<meta property="og:title" content="Show Copy Number Sequence Shapes — show_seq_shape" />
-<meta property="og:description" content="Show Copy Number Sequence Shapes" />
+<meta property="og:title" content="Extract Pasted Sequences from Each Chromosome — extract_seqs" />
+<meta property="og:description" content="See get_score_matrix() for examples.
+The result sequences are unique and sorted." />
 
 
 
@@ -103,84 +104,61 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Show Copy Number Sequence Shapes</h1>
+    <h1>Extract Pasted Sequences from Each Chromosome</h1>
     
-    <div class="hidden name"><code>show_seq_shape.Rd</code></div>
+    <div class="hidden name"><code>extract_seqs.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Show Copy Number Sequence Shapes</p>
+    <p>See <code><a href='get_score_matrix.html'>get_score_matrix()</a></code> for examples.
+The result sequences are unique and sorted.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>show_seq_shape</span>(
-  <span class='no'>x</span>,
-  <span class='kw'>map</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>simple_version</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>line_size_scale</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-  <span class='kw'>x_lab</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span>(<span class='no'>simple_version</span>, <span class='st'>"Assumed equal length"</span>, <span class='st'>"Estimated segment length"</span>),
-  <span class='kw'>y_lab</span> <span class='kw'>=</span> <span class='st'>"Copy number"</span>,
-  <span class='kw'>nrow</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>ncol</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>scales</span> <span class='kw'>=</span> <span class='st'>"free_x"</span>
+    <pre class="usage"><span class='fu'>extract_seqs</span>(
+  <span class='no'>dt</span>,
+  <span class='kw'>len</span> <span class='kw'>=</span> <span class='fl'>5L</span>,
+  <span class='kw'>step</span> <span class='kw'>=</span> <span class='fl'>1L</span>,
+  <span class='kw'>local_cutoff</span> <span class='kw'>=</span> <span class='fl'>1e+07</span>,
+  <span class='kw'>flexible_approach</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>return_dt</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>a character vector of sequences or named list of sequences. All sequences must have same width.</p></td>
+      <th>dt</th>
+      <td><p>a <code>data.table</code> from <a href='transform_seqs.html'>transform_seqs</a>.</p></td>
     </tr>
     <tr>
-      <th>map</th>
-      <td><p>default is <code>NULL</code>, a named string vector.</p></td>
+      <th>len</th>
+      <td><p>cut length.</p></td>
     </tr>
     <tr>
-      <th>simple_version</th>
-      <td><p>if <code>TRUE</code>, just use segmental copy number value.</p></td>
+      <th>step</th>
+      <td><p>step size to move on each chromosome sequence.</p></td>
     </tr>
     <tr>
-      <th>line_size_scale</th>
-      <td><p>the scale size for line width.</p></td>
+      <th>local_cutoff</th>
+      <td><p>any segment with length greater than this cutoff will be filtered out and
+used as cutpoint, default is <code>10Mb</code>.</p></td>
     </tr>
     <tr>
-      <th>x_lab</th>
-      <td><p>x lab.</p></td>
+      <th>flexible_approach</th>
+      <td><p>if <code>TRUE</code>, extract flexible-size sequences between segments
+with size less than specified cutoff. So the arguments <code>len</code> and <code>step</code> are ignored.</p></td>
     </tr>
     <tr>
-      <th>y_lab</th>
-      <td><p>y lab.</p></td>
-    </tr>
-    <tr>
-      <th>nrow</th>
-      <td><p>Number of rows, same as <code>ncol</code></p></td>
-    </tr>
-    <tr>
-      <th>ncol</th>
-      <td><p>Number of columns, works only when <code>facet='wrap'</code>, see <code>facet_wrap</code></p></td>
-    </tr>
-    <tr>
-      <th>scales</th>
-      <td><p>Should scales be fixed (<code>"fixed"</code>, the default),
-free (<code>"free"</code>), or free in one dimension (<code>"free_x"</code>,
-<code>"free_y"</code>)?</p></td>
+      <th>return_dt</th>
+      <td><p>if <code>TRUE</code>, just return a <code>data.table</code> containing
+mutated <code>Seqs</code> column.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a <code>ggplot</code> object.</p>
+    <p>a <code>list</code>.</p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_shape</span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"ADGHK"</span>))
-<span class='no'>p</span>
-
-<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>a</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"ABCDE"</span>, <span class='st'>"AXFDP"</span>), <span class='kw'>b</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"KKDFH"</span>, <span class='st'>"GKDFM"</span>))
-<span class='no'>p2</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_shape</span>(<span class='no'>x</span>)
-<span class='no'>p2</span>
-
-<span class='no'>p3</span> <span class='kw'>&lt;-</span> <span class='fu'>show_seq_shape</span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"ABCD"</span>), <span class='kw'>simple_version</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='no'>p3</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

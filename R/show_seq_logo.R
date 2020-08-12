@@ -21,6 +21,8 @@
 #' expect_is(p1, "ggplot")
 #' expect_is(p2, "ggplot")
 #' expect_is(p3, "ggplot")
+#' expect_error(show_seq_logo(sapply(split(LETTERS[1:24], 1:4),
+#'   function(x) paste0(x, collapse = "")), indicator = 1:24, recode = TRUE))
 show_seq_logo <- function(x, method = c("prob", "bits"),
                           simple_version = FALSE,
                           ncol = NULL, nrow = NULL,

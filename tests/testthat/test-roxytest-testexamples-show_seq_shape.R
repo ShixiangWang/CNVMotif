@@ -2,14 +2,19 @@
 
 context("File R/show_seq_shape.R: @testexamples")
 
-test_that("Function show_seq_shape() @ L23", {
+test_that("Function show_seq_shape() @ L28", {
   
   p <- show_seq_shape(c("ADGHK"))
   p
+  
   x <- list(a = c("ABCDE", "AXFDP"), b = c("KKDFH", "GKDFM"))
   p2 <- show_seq_shape(x)
   p2
+  
+  p3 <- show_seq_shape(c("ABCD"), simple_version = TRUE)
+  p3
   expect_is(p, "ggplot")
   expect_is(p2, "ggplot")
+  expect_is(p3, "ggplot")
 })
 

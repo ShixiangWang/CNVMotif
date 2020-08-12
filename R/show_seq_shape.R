@@ -14,12 +14,17 @@
 #' @examples
 #' p <- show_seq_shape(c("ADGHK"))
 #' p
+#'
 #' x <- list(a = c("ABCDE", "AXFDP"), b = c("KKDFH", "GKDFM"))
 #' p2 <- show_seq_shape(x)
 #' p2
+#'
+#' p3 <- show_seq_shape(c("ABCD"), simple_version = TRUE)
+#' p3
 #' @testexamples
 #' expect_is(p, "ggplot")
 #' expect_is(p2, "ggplot")
+#' expect_is(p3, "ggplot")
 show_seq_shape <- function(x, map = NULL,
                            simple_version = FALSE,
                            line_size_scale = 3,

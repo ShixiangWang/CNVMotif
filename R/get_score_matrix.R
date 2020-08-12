@@ -46,7 +46,7 @@
 #' mat_d <- get_score_matrix(seqs$keep, dislike = TRUE)
 #' mat_d
 #' \donttest{
-#' if (require("doParallel")) {
+#' if (requireNamespace("doParallel")) {
 #'   mock_seqs <- sapply(1:10000, function(x) {
 #'     paste(sample(LETTERS[1:24], 5, replace = TRUE), collapse = "")
 #'   })
@@ -71,7 +71,7 @@
 #' expect_is(mat_c, "matrix")
 #' expect_is(mat_d, "matrix")
 #' expect_equal(mat2, 120L - mat)
-#' if (require("doParallel")) {
+#' if (requireNamespace("doParallel")) {
 #'   expect_equal(y1, y2)
 #' }
 get_score_matrix <- function(x, sub_mat = NULL,

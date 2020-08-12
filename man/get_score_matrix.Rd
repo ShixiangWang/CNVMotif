@@ -68,7 +68,7 @@ mat_c
 mat_d <- get_score_matrix(seqs$keep, dislike = TRUE)
 mat_d
 \donttest{
-if (require("doParallel")) {
+if (requireNamespace("doParallel")) {
   mock_seqs <- sapply(1:10000, function(x) {
     paste(sample(LETTERS[1:24], 5, replace = TRUE), collapse = "")
   })
