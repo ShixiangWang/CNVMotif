@@ -31,47 +31,53 @@ cluster_pam_estimate <- function(x,
                                  seed = 1234L,
                                  ...) {
   stopifnot(is.matrix(x))
+
+  message("Task: Estimate Optimal Number of Cluster for PAM Algorithm.")
+
   set.seed(seed)
   if (k.max < 2) {
     stop("k.max must bet > = 2")
   }
   method <- match.arg(method)
 
-  if (method %in% c("silhouette", "wss")) {
-    diss <- stats::as.dist(x)
-    v <- rep(0, k.max)
-    if (method == "silhouette") {
-      for (i in 2:k.max) {
-        clust <- FUNcluster(x, i, diss = TRUE, ...)
-        v[i] <- .get_ave_sil_width(diss, clust$cluster)
-      }
-    } else if (method == "wss") {
-      for (i in 1:k.max) {
-        clust <- FUNcluster(x, i, diss = TRUE, ...)
-        v[i] <- .get_withinSS(diss, clust$cluster)
-      }
+  diss <- stats::as.dist(x)
+  v <- rep(0, k.max)
+  if (method == "silhouette") {
+    for (i in 2:k.max) {
+      message("Generating ", i, " clusters...")
+      clust <- FUNcluster(x, i, diss = TRUE, ...)
+      v[i] <- .get_ave_sil_width(diss, clust$cluster)
     }
-    df <- data.frame(
-      clusters = as.factor(1:k.max), y = v,
-      stringsAsFactors = TRUE
-    )
-    ylab <- "Total Within Sum of Square"
-    if (method == "silhouette") {
-      ylab <- "Average silhouette width"
+  } else if (method == "wss") {
+    for (i in 1:k.max) {
+      message("Generating ", i, " clusters...")
+      clust <- FUNcluster(x, i, diss = TRUE, ...)
+      v[i] <- .get_withinSS(diss, clust$cluster)
     }
-    p <- ggpubr::ggline(df,
-      x = "clusters", y = "y", group = 1,
-      color = linecolor, ylab = ylab, xlab = "Number of clusters k",
-      main = "Optimal number of clusters"
-    )
-    if (method == "silhouette") {
-      p <- p + geom_vline(
-        xintercept = which.max(v), linetype = 2,
-        color = linecolor
-      )
-    }
-    return(p)
   }
+  message("Plotting...")
+  df <- data.frame(
+    clusters = as.factor(1:k.max), y = v,
+    stringsAsFactors = TRUE
+  )
+  ylab <- "Total Within Sum of Square"
+  if (method == "silhouette") {
+    ylab <- "Average silhouette width"
+  }
+  p <- ggpubr::ggline(df,
+                      x = "clusters", y = "y", group = 1,
+                      color = linecolor, ylab = ylab, xlab = "Number of clusters k",
+                      main = "Optimal number of clusters"
+  )
+  if (method == "silhouette") {
+    p <- p + geom_vline(
+      xintercept = which.max(v), linetype = 2,
+      color = linecolor
+    )
+  }
+
+  message("Done.")
+  return(p)
 }
 
 # PAM Wrapper
