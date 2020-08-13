@@ -15,12 +15,12 @@ col2hex <- function(col, alpha) grDevices::rgb(t(grDevices::col2rgb(col)), alpha
 chunk2 <- function(x, n) split(x, cut(seq_along(x), n, labels = FALSE))
 
 # Call un-exported functions from other packages
-`%:::%` <- function(pkg, fun) {
+.get_fun <- function(pkg, fun) {
   get(fun,
       envir = asNamespace(pkg),
       inherits = FALSE
   )
 }
 
-.get_ave_sil_width <- `%:::%`("factoextra", ".get_ave_sil_width")
-.get_withinSS <- `%:::%`("factoextra", ".get_withinSS")
+.get_ave_sil_width <- .get_fun("factoextra", ".get_ave_sil_width")
+.get_withinSS <- .get_fun("factoextra", ".get_withinSS")

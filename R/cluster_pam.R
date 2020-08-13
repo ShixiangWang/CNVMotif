@@ -76,14 +76,8 @@ cluster_pam_estimate <- function(x,
   p <- ggpubr::ggline(df,
                       x = "clusters", y = "y", group = 1,
                       color = linecolor, ylab = ylab, xlab = "Number of clusters k",
-                      main = "Optimal number of clusters"
+                      main = "Estimation of cluster number"
   )
-  if (method == "silhouette") {
-    p <- p + geom_vline(
-      xintercept = which.max(v), linetype = 2,
-      color = linecolor
-    )
-  }
 
   message("Done.")
   return(p)
