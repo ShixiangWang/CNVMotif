@@ -2,7 +2,7 @@
 
 context("File R/cluster_pam.R: @testexamples")
 
-test_that("Function cluster_pam_estimate() @ L26", {
+test_that("Function cluster_pam_estimate() @ L28", {
   
   data("iris")
   head(iris)

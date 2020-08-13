@@ -8,6 +8,8 @@
 #' @inheritParams cluster::pam
 #' @param x a dissimilarity matrix.
 #' @param seed random seed.
+#' @param clean_memory logical. If `TRUE`, the cluster result object will be removed
+#' and the memory will be released by calling `gc()` to reduce the memory consumption.
 #' @return a `ggplot` object.
 #' @export
 #' @examples
@@ -28,11 +30,12 @@ cluster_pam_estimate <- function(x,
                                  k.max = 10, verbose = interactive(),
                                  barfill = "steelblue", barcolor = "steelblue", linecolor = "steelblue",
                                  FUNcluster = cluster::pam,
-                                 seed = 1234L,
+                                 seed = 1234L, clean_memory = FALSE,
                                  ...) {
   stopifnot(is.matrix(x))
 
   message("Task: Estimate Optimal Number of Cluster for PAM Algorithm.")
+  on.exit(gc(verbose = FALSE))
 
   set.seed(seed)
   if (k.max < 2) {
@@ -47,12 +50,18 @@ cluster_pam_estimate <- function(x,
       message("Generating ", i, " clusters...")
       clust <- FUNcluster(x, i, diss = TRUE, ...)
       v[i] <- .get_ave_sil_width(diss, clust$cluster)
+      if (clean_memory) {
+        rm(clust); gc(verbose = FALSE)
+      }
     }
   } else if (method == "wss") {
     for (i in 1:k.max) {
       message("Generating ", i, " clusters...")
       clust <- FUNcluster(x, i, diss = TRUE, ...)
       v[i] <- .get_withinSS(diss, clust$cluster)
+      if (clean_memory) {
+        rm(clust); gc(verbose = FALSE)
+      }
     }
   }
   message("Plotting...")

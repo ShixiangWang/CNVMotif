@@ -15,6 +15,7 @@ cluster_pam_estimate(
   linecolor = "steelblue",
   FUNcluster = cluster::pam,
   seed = 1234L,
+  clean_memory = FALSE,
   ...
 )
 
@@ -46,6 +47,9 @@ not required when x is an output of the function
 \code{NbClust::NbClust()}.}
 
 \item{seed}{random seed.}
+
+\item{clean_memory}{logical. If \code{TRUE}, the cluster result object will be removed
+and the memory will be released by calling \code{gc()} to reduce the memory consumption.}
 
 \item{...}{other parameters passing to \link[cluster:pam]{cluster::pam}.}
 
