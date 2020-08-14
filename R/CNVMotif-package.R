@@ -2,6 +2,7 @@
 #' @import ggplot2
 #' @import ggseqlogo
 #' @import data.table
+#' @import msa
 "_PACKAGE"
 
 # The following block is used by usethis to automatically manage
