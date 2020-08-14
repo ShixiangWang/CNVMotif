@@ -1,37 +1,793 @@
-printHelp <- .get_fun("msa", "printHelp")
-checkFunctionAvailable <- .get_fun("msa", "checkFunctionAvailable")
-checkInputSeq <- .get_fun("msa", "checkInputSeq")
-checkType <- .get_fun("msa", "checkType")
-checkProfileScore <- .get_fun("msa", "checkProfileScore")
-transformInputSeq <- .get_fun("msa", "transformInputSeq")
-checkGapOpening2 <- .get_fun("msa", "checkGapOpening2")
-checkGapExtension <- .get_fun("msa", "checkGapExtension")
-checkMaxiters <- .get_fun("msa", "checkMaxiters")
-checkVerbose <- .get_fun("msa", "checkVerbose")
-checkIntegerParamsNew <- .get_fun("msa", "checkIntegerParamsNew")
-checkNumericParamsNew <- .get_fun("msa", "checkNumericParamsNew")
-checkNegativeParams <- .get_fun("msa", "checkNegativeParams")
-checkSingleValParamsNew <- .get_fun("msa", "checkSingleValParamsNew")
-checkPositiveParams <- .get_fun("msa", "checkPositiveParams")
-checkIsValue <- .get_fun("msa", "checkIsValue")
-checkInFile <- .get_fun("msa", "checkInFile")
-checkIntervalParamsNew <- .get_fun("msa", "checkIntervalParamsNew")
-checkLogicalParams <- .get_fun("msa", "checkLogicalParams")
-convertAlnRows <- .get_fun("msa", "convertAlnRows")
-printHelp <- .get_fun("msa", "printHelp")
-printHelp <- .get_fun("msa", "printHelp")
+msaClustalWCustom <- function(inputSeqs, cluster = "default", gapOpening = "default",
+                              gapExtension = "default", maxiters = "default",
+                              substitutionMatrix = matrix(0),
+                              type = "custom", order = c("input", "aligned"), verbose = FALSE,
+                              help = FALSE, ...) {
+  if (help) {
+    printHelp("ClustalW")
+    return(invisible(NULL))
+  }
+  if (!checkFunctionAvailable("ClustalW")) {
+    stop("ClustalW is not available via msa!")
+  }
+  params <- list(...)
+  paramsCopy <- lapply(params, function(x) TRUE)
+  params[["inputSeqIsFileFlag"]] <- checkInputSeq(inputSeqs)
+  #type <- checkType(type, inputSeqs, "msaClustalW")
+  inputSeqs <- transformInputSeq(inputSeqs)
+  order <- match.arg(order)
+  params[["outorder"]] <- order
+  if (is.null(cluster) || identical(cluster, "default")) {
+    cluster <- "nj"
+  }
+  if (length(cluster) != 1) {
+    stop(
+      "The parameter cluster can only have one value. \n",
+      "Possible values are \"nj\" or \"upgma\"!"
+    )
+  }
+  cluster <- tolower(cluster)
+  if (!(cluster %in% c("nj", "upgma"))) {
+    stop("The parameter cluster can only have ", "the values \"nj\" or \"upgma\"!")
+  }
+  params[["substitutionMatrixIsDefaultFlag"]] <- FALSE
+  params[["substitutionMatrixIsStringFlag"]] <- FALSE
+  if (is.null(substitutionMatrix) || identical(
+    substitutionMatrix,
+    "default"
+  )) {
+    params[["substitutionMatrixIsDefaultFlag"]] <- TRUE
+  }
+  else if (is.character(substitutionMatrix) && !is.matrix(substitutionMatrix) &&
+    grepl("\\.", substitutionMatrix, perl = TRUE)) {
+    if (length(substitutionMatrix) != 1) {
+      stop(
+        "You are using more than one file for substitutionMatrix. \n",
+        "It should only be a single character string!"
+      )
+    }
+    if (!file.exists(substitutionMatrix)) {
+      stop("The file for parameter substitutionMatrix does not exist!")
+    }
+    params[["substitutionMatrixIsStringFlag"]] <- TRUE
+  }
+  else if (is.character(substitutionMatrix) && !is.matrix(substitutionMatrix)) {
+    if (type == "protein") {
+      possibleValues <- c("blosum", "pam", "gonnet", "id")
+      if (!(substitutionMatrix %in% possibleValues)) {
+        text <- ""
+        text <- paste(possibleValues, collapse = ", ")
+        stop(
+          "The parameter substitutionMatrix ", "only can have the values: \n",
+          text
+        )
+      }
+      params[["substitutionMatrixIsStringFlag"]] <- TRUE
+    }
+    else {
+      possibleValues <- c("iub", "clustalw")
+      if (!(substitutionMatrix %in% possibleValues)) {
+        text <- ""
+        text <- paste(possibleValues, collapse = ", ")
+        stop(
+          "The parameter substitutionMatrix ", "only can have the values: \n",
+          text
+        )
+      }
+      params[["substitutionMatrixIsStringFlag"]] <- FALSE
+      params[["substitutionMatrixIsDefaultFlag"]] <- TRUE
+      params[["pwdnamatrix"]] <- substitutionMatrix
+      substitutionMatrix <- "default"
+    }
+  }
+  else {
+    reqNames <- c(
+      "A", "R", "N", "D", "C", "Q", "E", "G",
+      "H", "I", "L", "K", "M", "F", "P", "S", "T", "W",
+      "Y", "V", "B", "Z", "X", "*"
+    )
+    if (type %in% c("protein", "letter")) {
+      rowPerm <- match(reqNames, rownames(substitutionMatrix))
+      if (any(is.na(rowPerm))) {
+        stop("substitutionMatrix does not contain all necessary rows")
+      }
+      colPerm <- match(reqNames, colnames(substitutionMatrix))
+      if (any(is.na(colPerm))) {
+        stop("substitutionMatrix does not contain all necessary columns")
+      }
+      substitutionMatrix <- substitutionMatrix[
+        rowPerm,
+        colPerm
+      ]
+      if (!isSymmetric(substitutionMatrix)) {
+        stop("substitutionMatrix should be a symmetric matrix!")
+      }
+    }
+    else {
+      reqNuc <- if (type == "dna") {
+        c("A", "G", "C", "T")
+      } else if (type == "RNA") {
+        c("A", "G", "C", "U")
+      } else {
+        ## TO support custom letters
+        type = "protein"
+        reqNames <- c(LETTERS[1:24], "*")
+        if (identical(matrix(0), substitutionMatrix)) {
+          substitutionMatrix <- matrix(0, nrow = length(reqNames), ncol = length(reqNames),
+                                       dimnames = list(reqNames, reqNames))
+          diag(substitutionMatrix) <- 1
+        }
+        reqNames
+      }
+      if (any(is.na(match(reqNuc, rownames(substitutionMatrix))))) {
+        stop("substitutionMatrix does not contain all necessary rows")
+      }
+      if (any(is.na(match(reqNuc, colnames(substitutionMatrix))))) {
+        stop("substitutionMatrix does not contain all necessary columns")
+      }
+      rowSel <- which(rownames(substitutionMatrix) %in%
+        reqNames)
+      colSel <- which(colnames(substitutionMatrix) %in%
+        reqNames)
+      substitutionMatrix <- substitutionMatrix[
+        rowSel,
+        colSel
+      ]
+      fakeAAmat <- matrix(0, length(reqNames), length(reqNames))
+      rownames(fakeAAmat) <- reqNames
+      colnames(fakeAAmat) <- reqNames
+      fakeAAmat[rownames(substitutionMatrix), colnames(substitutionMatrix)] <- substitutionMatrix
+      substitutionMatrix <- fakeAAmat
+      params[["dnamatrix"]] <- NULL
+    }
+  }
+  gapOpening <- checkGapOpening(gapOpening, type, substitutionMatrix,
+    defaultDNAValue = 15, defaultAAValue = 10
+  )
+  gapExtension <- checkGapExtension(gapExtension, type, substitutionMatrix,
+    defaultDNAValue = 6.66, defaultAAValue = 0.2
+  )
+  maxiters <- checkMaxiters(maxiters, 3, "msaClustalW")
+  verbose <- checkVerbose(FALSE, verbose)
+  params[["options"]] <- checkLogicalParams(
+    "options", params,
+    FALSE
+  )
+  paramsCopy[["options"]] <- NULL
+  params[["check"]] <- checkLogicalParams(
+    "check", params,
+    FALSE
+  )
+  paramsCopy[["check"]] <- NULL
+  params[["fullhelp"]] <- checkLogicalParams(
+    "fullhelp", params,
+    FALSE
+  )
+  paramsCopy[["fullhelp"]] <- NULL
+  params[["align"]] <- checkLogicalParams(
+    "align", params,
+    FALSE
+  )
+  paramsCopy[["align"]] <- NULL
+  params[["pim"]] <- checkLogicalParams("pim", params, FALSE)
+  paramsCopy[["pim"]] <- NULL
+  params[["convert"]] <- checkLogicalParams(
+    "convert", params,
+    FALSE
+  )
+  paramsCopy[["convert"]] <- NULL
+  params[["quicktree"]] <- checkLogicalParams(
+    "quicktree",
+    params, FALSE
+  )
+  paramsCopy[["quicktree"]] <- NULL
+  params[["negative"]] <- checkLogicalParams(
+    "negative", params,
+    FALSE
+  )
+  paramsCopy[["negative"]] <- NULL
+  posVal <- "clustal"
+  if (!is.null(params[["output"]]) && !identical(
+    params[["output"]],
+    posVal
+  )) {
+    stop(
+      "Until now, the only value for parameter \n", "output is \"clustal\", which is default. \n",
+      "A more sophisticated implementation should \n",
+      "be available in higher versions of the package."
+    )
+  }
+  params[["output"]] <- checkSingleValParamsNew(
+    "output", params,
+    posVal
+  )
+  paramsCopy[["output"]] <- NULL
+  posVal <- c("lower", "upper")
+  params[["case"]] <- checkSingleValParamsNew(
+    "case", params,
+    posVal
+  )
+  paramsCopy[["case"]] <- NULL
+  if (is.null(params[["seqnos"]])) {
+    params[["seqnosFlag"]] <- TRUE
+  }
+  else {
+    params[["seqnosFlag"]] <- FALSE
+    if (length(params[["seqnos"]]) != 1) {
+      stop(
+        "The parameter seqnos should be a single string! \n",
+        "Possible values are \"on\", or \"off\"!"
+      )
+    }
+    if (!is.character(params[["seqnos"]])) {
+      stop(
+        "The parameter <seqnos> should be a string! \n",
+        "Possible values are \"on\", or \"off\"!"
+      )
+    }
+    posVal <- c("on", "off")
+    params[["seqnos"]] <- checkIsValue(
+      "seqnos", params,
+      posVal
+    )
+  }
+  paramsCopy[["seqnos"]] <- NULL
+  posVal <- c("off", "on")
+  params[["seqno_range"]] <- checkSingleValParamsNew(
+    "seqno_range",
+    params, posVal
+  )
+  paramsCopy[["seqno_range"]] <- NULL
+  if (!is.null(params[["range"]])) {
+    if (length(params[["range"]]) != 2) {
+      stop(
+        "The parameter range needs a vector of length 2! \n",
+        "Both values should be positive integers!"
+      )
+    }
+    if (!is.vector(params[["range"]])) {
+      stop("The parameter range should be a vector ", "with 2 positive integers!")
+    }
+    if (any(is.na(params[["range"]])) || any(is.nan(params[["range"]]))) {
+      stop(
+        "The parameter range should consist of 2 positive ",
+        "integers, \n", "not with NAs or NaNs!"
+      )
+    }
+    if (!is.integer(params[["range"]])) {
+      if (params[["range"]][[1]] - round(params[["range"]][[1]]) !=
+        0 | params[["range"]][[2]] - round(params[["range"]][[2]]) !=
+        0) {
+        stop(
+          "The parameter range should consist of integers, \n",
+          "not numeric values!"
+        )
+      }
+      if (params[["range"]][[1]] <= .Machine$integer.max &
+        params[["range"]][[2]] <= .Machine$integer.max) {
+        params[["range"]][[1]] <- as.integer(params[["range"]][[1]])
+        params[["range"]][[2]] <- as.integer(params[["range"]][[2]])
+      }
+      else {
+        stop("The values in parameter range ", " are bigger than integer!")
+      }
+    }
+    if (params[["range"]][[1]] < 0 | params[["range"]][[2]] <
+      0) {
+      stop("The parameter range needs positive integer values!")
+    }
+  }
+  paramsCopy[["range"]] <- NULL
+  if (!is.null(params[["stats"]])) {
+    tempList <- checkOutFile("stats", params)
+    if (tempList$existingFile) {
+      interactiveCheck("stats", params)
+    }
+    params[["stats"]] <- tempList$param
+  }
+  paramsCopy[["stats"]] <- NULL
+  params[["ktuple"]] <- checkIntegerParamsNew("ktuple", params)
+  if (!is.null(params[["ktuple"]])) {
+    if (type == "protein") {
+      if (params[["ktuple"]] > 2) {
+        stop("If you are using proteins, ktuple should be <=2!")
+      }
+    }
+  }
+  paramsCopy[["ktuple"]] <- NULL
+  params[["topdiags"]] <- checkIntegerParamsNew(
+    "topdiags",
+    params
+  )
+  paramsCopy[["topdiags"]] <- NULL
+  params[["window"]] <- checkIntegerParamsNew("window", params)
+  paramsCopy[["window"]] <- NULL
+  params[["pairgap"]] <- checkIntegerParamsNew("pairgap", params)
+  paramsCopy[["pairgap"]] <- NULL
+  posVal <- c("percent", "absolute")
+  params[["score"]] <- checkSingleValParamsNew(
+    "score", params,
+    posVal
+  )
+  paramsCopy[["score"]] <- NULL
+  if (!is.null(params[["pwmatrix"]]) && grepl("\\.", params[["pwmatrix"]],
+    perl = TRUE
+  )) {
+    checkInFile("pwmatrix", params)
+  }
+  else {
+    posVal <- c("blosum", "pam", "gonnet", "id")
+    params[["pwmatrix"]] <- checkSingleValParamsNew(
+      "pwmatrix",
+      params, posVal
+    )
+  }
+  paramsCopy[["pwmatrix"]] <- NULL
+  if (!is.null(params[["pwdnamatrix"]]) && grepl("\\.", params[["pwdnamatrix"]],
+    perl = TRUE
+  )) {
+    checkInFile("pwdnamatrix", params)
+  }
+  else {
+    posVal <- c("iub", "clustalw")
+    params[["pwdnamatrix"]] <- checkSingleValParamsNew(
+      "pwdnamatrix",
+      params, posVal
+    )
+  }
+  paramsCopy[["pwdnamatrix"]] <- NULL
+  params[["pwgapopen"]] <- checkNumericParamsNew(
+    "pwgapopen",
+    params
+  )
+  if (is.numeric(params[["pwgapopen"]])) {
+    params[["pwgapopen"]] <- abs(params[["pwgapopen"]])
+  }
+  paramsCopy[["pwgapopen"]] <- NULL
+  params[["pwgapext"]] <- checkNumericParamsNew(
+    "pwgapext",
+    params
+  )
+  if (is.numeric(params[["pwgapext"]])) {
+    params[["pwgapext"]] <- abs(params[["pwgapext"]])
+  }
+  paramsCopy[["pwgapext"]] <- NULL
+  if (!is.null(params[["usetree"]])) {
+    checkInFile("usetree", params)
+  }
+  paramsCopy[["usetree"]] <- NULL
+  if (!is.null(params[["dnamatrix"]]) && grepl("\\.", params[["dnamatrix"]],
+    perl = TRUE
+  )) {
+    checkInFile("dnamatrix", params)
+  }
+  else if (is.null(params[["pwdnamatrix"]])) {
+    posVal <- c("iub", "clustalw")
+    params[["pwdnamatrix"]] <- checkSingleValParamsNew(
+      "dnamatrix",
+      params, posVal
+    )
+  }
+  paramsCopy[["dnamatrix"]] <- NULL
+  params[["endgaps"]] <- checkLogicalParams(
+    "endgaps", params,
+    FALSE
+  )
+  paramsCopy[["endgaps"]] <- NULL
+  params[["gapdist"]] <- checkIntegerParamsNew("gapdist", params)
+  paramsCopy[["gapdist"]] <- NULL
+  params[["nopgap"]] <- checkLogicalParams(
+    "nopgap", params,
+    FALSE
+  )
+  paramsCopy[["nopgap"]] <- NULL
+  params[["nohgap"]] <- checkLogicalParams(
+    "nohgap", params,
+    FALSE
+  )
+  paramsCopy[["nohgap"]] <- NULL
+  if (!is.null(params[["novgap"]])) {
+    params[["novgap"]] <- checkLogicalParams(
+      "novgap", params,
+      TRUE
+    )
+  }
+  paramsCopy[["novgap"]] <- NULL
+  if (!is.null(params[["hgapresidues"]])) {
+    if (!is.character(params[["hgapresidues"]])) {
+      stop("The parameter hgapresidues should be a string!")
+    }
+  }
+  paramsCopy[["hgapresidues"]] <- NULL
+  params[["maxdiv"]] <- checkIntegerParamsNew("maxdiv", params)
+  paramsCopy[["maxdiv"]] <- NULL
+  params[["transweight"]] <- checkNumericParamsNew(
+    "transweight",
+    params
+  )
+  paramsCopy[["transweight"]] <- NULL
+  posVal <- c("tree", "alignment", "none")
+  params[["iteration"]] <- checkSingleValParamsNew(
+    "iteration",
+    params, posVal
+  )
+  paramsCopy[["iteration"]] <- NULL
+  params[["noweights"]] <- checkLogicalParams(
+    "noweights",
+    params, FALSE
+  )
+  paramsCopy[["noweights"]] <- NULL
+  params[["profile"]] <- checkLogicalParams(
+    "profile", params,
+    FALSE
+  )
+  paramsCopy[["profile"]] <- NULL
+  if (!is.null(params[["profile1"]])) {
+    checkInFile("profile1", params)
+  }
+  paramsCopy[["profile1"]] <- NULL
+  if (!is.null(params[["profile2"]])) {
+    checkInFile("profile2", params)
+  }
+  paramsCopy[["profile2"]] <- NULL
+  if (!is.null(params[["usetree1"]])) {
+    checkInFile("usetree1", params)
+  }
+  paramsCopy[["usetree1"]] <- NULL
+  if (!is.null(params[["usetree2"]])) {
+    checkInFile("usetree2", params)
+  }
+  paramsCopy[["usetree2"]] <- NULL
+  params[["sequences"]] <- checkLogicalParams(
+    "sequences",
+    params, FALSE
+  )
+  paramsCopy[["sequences"]] <- NULL
+  params[["nosecstr1"]] <- checkLogicalParams(
+    "nosecstr1",
+    params, FALSE
+  )
+  paramsCopy[["nosecstr1"]] <- NULL
+  params[["nosecstr2"]] <- checkLogicalParams(
+    "nosecstr2",
+    params, FALSE
+  )
+  paramsCopy[["nosecstr2"]] <- NULL
+  posVal <- c("structure", "mask", "both", "none")
+  params[["secstrout"]] <- checkSingleValParamsNew(
+    "secstrout",
+    params, posVal
+  )
+  paramsCopy[["secstrout"]] <- NULL
+  params[["helixgap"]] <- checkIntegerParamsNew(
+    "helixgap",
+    params
+  )
+  paramsCopy[["helixgap"]] <- NULL
+  params[["strandgap"]] <- checkIntegerParamsNew(
+    "strandgap",
+    params
+  )
+  paramsCopy[["strandgap"]] <- NULL
+  params[["loopgap"]] <- checkIntegerParamsNew("loopgap", params)
+  paramsCopy[["loopgap"]] <- NULL
+  params[["terminalgap"]] <- checkIntegerParamsNew(
+    "terminalgap",
+    params
+  )
+  paramsCopy[["terminalgap"]] <- NULL
+  params[["helixendin"]] <- checkIntegerParamsNew(
+    "helixendin",
+    params
+  )
+  paramsCopy[["helixendin"]] <- NULL
+  params[["helixendout"]] <- checkIntegerParamsNew(
+    "helixendout",
+    params
+  )
+  paramsCopy[["helixendout"]] <- NULL
+  params[["strandendin"]] <- checkIntegerParamsNew(
+    "strandendin",
+    params
+  )
+  paramsCopy[["strandendin"]] <- NULL
+  params[["strandendout"]] <- checkIntegerParamsNew(
+    "strandendout",
+    params
+  )
+  paramsCopy[["strandendout"]] <- NULL
+  posVal <- c("nj", "phylip", "dist", "nexus")
+  params[["outputtree"]] <- checkSingleValParamsNew(
+    "outputtree",
+    params, posVal
+  )
+  paramsCopy[["outputtree"]] <- NULL
+  params[["seed"]] <- checkIntegerParamsNew("seed", params)
+  paramsCopy[["seed"]] <- NULL
+  params[["kimura"]] <- checkLogicalParams(
+    "kimura", params,
+    FALSE
+  )
+  paramsCopy[["kimura"]] <- NULL
+  params[["tossgaps"]] <- checkLogicalParams(
+    "tossgaps", params,
+    FALSE
+  )
+  paramsCopy[["tossgaps"]] <- NULL
+  posVal <- c("node", "branch")
+  params[["bootlabels"]] <- checkSingleValParamsNew(
+    "bootlabels",
+    params, posVal
+  )
+  paramsCopy[["bootlabels"]] <- NULL
+  if (length(paramsCopy) != 0) {
+    stop(
+      "The following parameters are not known \n", "(or have been specified",
+      "more often than once):\n    ", paste(names(paramsCopy),
+        collapse = ", ", sep = ""
+      )
+    )
+  }
+  inputSeqNames <- names(inputSeqs)
+  names(inputSeqs) <- paste0("Seq", 1:length(inputSeqs))
+  result <- .Call("RClustalW", inputSeqs, cluster, abs(gapOpening),
+    abs(gapExtension), maxiters, substitutionMatrix, type,
+    verbose, params,
+    PACKAGE = "msa"
+  )
+  out <- convertAlnRows(result$msa, type)
+  if (length(inputSeqNames) > 0) {
+    perm <- match(names(out@unmasked), names(inputSeqs))
+    names(out@unmasked) <- inputSeqNames[perm]
+  }
+  else {
+    names(out@unmasked) <- NULL
+  }
+  standardParams <- list(
+    gapOpening = gapOpening, gapExtension = gapExtension,
+    maxiters = maxiters, verbose = verbose
+  )
+  out@params <- c(standardParams, params)
+  out@call <- deparse(sys.call())
+  out
+}
 
-msaMuscleCustom <- function(inputSeqs, cluster = "default", gapOpening = "default",
-                            gapExtension = "default", maxiters = "default", substitutionMatrix = "default",
-                            type = "default", order = c("aligned", "input"), verbose = FALSE,
-                            help = FALSE, ...) {
+
+msaClustalOmegaCustom <- function (inputSeqs, cluster = "default", gapOpening = "default",
+                                   gapExtension = "default", maxiters = "default", substitutionMatrix = "default",
+                                   type = "default", order = c("aligned", "input"), verbose = FALSE,
+                                   help = FALSE, ...)
+{
+  if (help) {
+    printHelp("ClustalOmega")
+    return(invisible(NULL))
+  }
+  if (!checkFunctionAvailable("ClustalOmega"))
+    stop("ClustalOmega is not available via msa!")
+  params <- list(...)
+  paramsCopy <- lapply(params, function(x) TRUE)
+  params[["inputSeqIsFileFlag"]] <- checkInputSeq(inputSeqs)
+  type <- checkType(type, inputSeqs, "msaClustalOmega")
+  inputSeqs <- transformInputSeq(inputSeqs)
+  order <- match.arg(order)
+  params[["outputOrder"]] <- switch(order, aligned = "tree-order",
+                                    input = "input-order")
+  if (identical(cluster, "default") || is.null(cluster)) {
+    cluster <- 100
+  }
+  if (length(cluster) != 1) {
+    stop("The parameter cluster should be a single positive integer!")
+  }
+  if (!is.integer(cluster)) {
+    if (is.numeric(cluster)) {
+      if (cluster - round(cluster) != 0) {
+        stop("The parameter cluster should be a positive integer!")
+      }
+      if (cluster < 0) {
+        stop("The parameter cluster should be a positive integer!")
+      }
+      if (cluster > .Machine$integer.max) {
+        stop("The parameter cluster is bigger than an integer!")
+      }
+      cluster <- as.integer(cluster)
+    }
+    else {
+      stop("The parameter cluster should be a positive integer!")
+    }
+  }
+  if (is.null(substitutionMatrix) || identical(substitutionMatrix,
+                                               "default")) {
+    substitutionMatrix <- NULL
+  }
+  else {
+    possibleValues <- c("BLOSUM30", "BLOSUM40", "BLOSUM50",
+                        "BLOSUM65", "BLOSUM80", "Gonnet")
+    if (!is.character(substitutionMatrix) || !(substitutionMatrix %in%
+                                               possibleValues)) {
+      text <- ""
+      text <- paste(possibleValues, collapse = ", ")
+      stop("The parameter substitutionMatrix", "only can have the values: \n",
+           text)
+    }
+  }
+  if (!identical(gapOpening, "default"))
+    warning("msaClustalOmega currently does not support to set\n",
+            "gapOpening to a non-default value!\n")
+  if (!identical(gapExtension, "default"))
+    warning("msaClustalOmega currently does not support to set\n",
+            "gapExtension to a non-default value!\n")
+  maxiters <- checkMaxiters(maxiters, 0, "msaClustalOmega")
+  verbose <- checkVerbose(FALSE, verbose)
+  params[["auto"]] <- checkLogicalParams("auto", params, FALSE)
+  paramsCopy[["auto"]] <- NULL
+  if (!is.null(params[["clusteringOut"]])) {
+    tempList <- checkOutFile("clusteringOut", params)
+    if (tempList$existingFile) {
+      interactiveCheck("clusteringOut", params)
+      params[["force"]] <- TRUE
+    }
+    params[["clusteringOut"]] <- tempList$param
+  }
+  paramsCopy[["clusteringOut"]] <- NULL
+  params[["dealign"]] <- checkLogicalParams("dealign", params,
+                                            FALSE)
+  paramsCopy[["dealign"]] <- NULL
+  if (!is.null(params[["distMatIn"]])) {
+    checkInFile("distMatIn", params)
+  }
+  paramsCopy[["distMatIn"]] <- NULL
+  if (!is.null(params[["distMatOut"]])) {
+    tempList <- checkOutFile("distMatOut", params)
+    if (tempList$existingFile) {
+      interactiveCheck("distMatOut", params)
+      params[["force"]] <- TRUE
+    }
+    params[["distMatOut"]] <- tempList$param
+  }
+  paramsCopy[["distMatOut"]] <- NULL
+  params[["force"]] <- checkLogicalParams("force", params,
+                                          FALSE)
+  paramsCopy[["force"]] <- NULL
+  params[["full"]] <- checkLogicalParams("full", params, FALSE)
+  paramsCopy[["full"]] <- NULL
+  params[["fullIter"]] <- checkLogicalParams("fullIter", params,
+                                             FALSE)
+  paramsCopy[["fullIter"]] <- NULL
+  if (!is.null(params[["guideTreeIn"]])) {
+    checkInFile("guideTreeIn", params)
+  }
+  paramsCopy[["guideTreeIn"]] <- NULL
+  if (!is.null(params[["guideTreeOut"]])) {
+    tempList <- checkOutFile("guideTreeOut", params)
+    if (tempList$existingFile) {
+      interactiveCheck("guideTreeOut", params)
+      params[["force"]] <- TRUE
+    }
+    params[["guideTreeOut"]] <- tempList$param
+  }
+  paramsCopy[["guideTreeOut"]] <- NULL
+  if (!is.null(params[["hmmIn"]])) {
+    checkInFile("hmmIn", params)
+  }
+  paramsCopy[["hmmIn"]] <- NULL
+  posVal <- c("auto", "fa", "fasta", "clu", "clustal", "msf",
+              "phy", "phylip", "selex", "st", "stockholm", "vie", "vienna")
+  params[["inFmt"]] <- checkSingleValParamsNew("inFmt", params,
+                                               posVal)
+  paramsCopy[["inFmt"]] <- NULL
+  params[["isProfile"]] <- checkLogicalParams("isProfile",
+                                              params, FALSE)
+  paramsCopy[["isProfile"]] <- NULL
+  params[["longVersion"]] <- checkLogicalParams("longVersion",
+                                                params, FALSE)
+  paramsCopy[["longVersion"]] <- NULL
+  params[["macRam"]] <- checkIntegerParamsNew("macRam", params)
+  paramsCopy[["macRam"]] <- NULL
+  params[["maxGuidetreeIterations"]] <- checkIntegerParamsNew("maxGuidetreeIterations",
+                                                              params)
+  paramsCopy[["maxGuidetreeIterations"]] <- NULL
+  params[["maxHmmIterations"]] <- checkIntegerParamsNew("maxHmmIterations",
+                                                        params)
+  paramsCopy[["maxHmmIterations"]] <- NULL
+  params[["maxNumSeq"]] <- checkIntegerParamsNew("maxNumSeq",
+                                                 params)
+  paramsCopy[["maxNumSeq"]] <- NULL
+  params[["maxSeqLen"]] <- checkIntegerParamsNew("maxSeqLen",
+                                                 params)
+  paramsCopy[["maxSeqLen"]] <- NULL
+  if (!is.null(params[["outfile"]])) {
+    tempList <- checkOutFile("outfile", params)
+    if (tempList$existingFile) {
+      interactiveCheck("outfile", params)
+      params[["force"]] <- TRUE
+    }
+    params[["outfile"]] <- tempList$param
+  }
+  paramsCopy[["outfile"]] <- NULL
+  posVal <- c("auto", "fa", "fasta", "clu", "clustal", "msf",
+              "phy", "phylip", "selex", "st", "stockholm", "vie", "vienna")
+  params[["outFmt"]] <- checkSingleValParamsNew("outFmt", params,
+                                                posVal)
+  if (!is.null(params[["outFmt"]])) {
+    if (!identical(params[["outFmt"]], "clustal") && !identical(params[["outFmt"]],
+                                                                "clu")) {
+      stop("Until now, the parameter outFmt is only implemented ",
+           "for value \"clustal\" \n", "the other formats will be ",
+           "realized in a later version.")
+    }
+  }
+  paramsCopy[["outFmt"]] <- NULL
+  params[["percentId"]] <- checkLogicalParams("percentId",
+                                              params, FALSE)
+  paramsCopy[["percentId"]] <- NULL
+  if (!is.null(params[["profile1"]])) {
+    checkInFile("profile1", params)
+  }
+  paramsCopy[["profile1"]] <- NULL
+  if (!is.null(params[["profile2"]])) {
+    if (is.null(params[["profile1"]])) {
+      stop("The parameter profile1 is NULL, \n", "so the parameter profile2 can't have a value! \n",
+           "Please insert file for parameter profile1 \n",
+           "or change the parameters profile1 and profile2!")
+    }
+    checkInFile("profile2", params)
+  }
+  paramsCopy[["profile2"]] <- NULL
+  params[["residueNumber"]] <- checkLogicalParams("residueNumber",
+                                                  params, FALSE)
+  paramsCopy[["residueNumber"]] <- NULL
+  params[["threads"]] <- checkIntegerParamsNew("threads", params)
+  params[["threads"]] <- checkPositiveParams("threads", params)
+  paramsCopy[["threads"]] <- NULL
+  params[["useKimura"]] <- checkLogicalParams("useKimura",
+                                              params, FALSE)
+  if (params[["useKimura"]] & params[["percentId"]]) {
+    stop("Percentage Identity cannot be calcuted \n", "if Kimura Distances are used!",
+         "You have to set either the parameter percentID or \n",
+         "the parameter useKimura to FALSE!")
+  }
+  paramsCopy[["useKimura"]] <- NULL
+  params[["version"]] <- checkLogicalParams("version", params,
+                                            FALSE)
+  paramsCopy[["version"]] <- NULL
+  params[["wrap"]] <- checkIntegerParamsNew("wrap", params)
+  params[["wrap"]] <- checkPositiveParams("wrap", params)
+  paramsCopy[["wrap"]] <- NULL
+  if (length(paramsCopy) != 0) {
+    stop("The following parameters are not known \n", "(or have been specified",
+         "more often than once):\n    ", paste(names(paramsCopy),
+                                               collapse = ", ", sep = ""))
+  }
+  inputSeqNames <- names(inputSeqs)
+  names(inputSeqs) <- paste0("Seq", 1:length(inputSeqs))
+  result <- .Call("RClustalOmega", inputSeqs, cluster, 6, 1,
+                  maxiters, substitutionMatrix, type, verbose, params,
+                  PACKAGE = "msa")
+  out <- convertAlnRows(result$msa, type)
+  if (length(inputSeqNames) > 0) {
+    perm <- match(names(out@unmasked), names(inputSeqs))
+    names(out@unmasked) <- inputSeqNames[perm]
+  }
+  else names(out@unmasked) <- NULL
+  standardParams <- list(gapOpening = gapOpening, gapExtension = gapExtension,
+                         maxiters = maxiters, verbose = verbose)
+  out@params <- c(standardParams, params)
+  out@call <- deparse(sys.call())
+  out
+}
+
+
+msaMuscleCustom <- function (inputSeqs, cluster = "default", gapOpening = "default",
+                             gapExtension = "default", maxiters = "default", substitutionMatrix = "default",
+                             type = "default", order = c("aligned", "input"), verbose = FALSE,
+                             help = FALSE, ...)
+{
   if (help) {
     printHelp("Muscle")
     return(invisible(NULL))
   }
-  if (!checkFunctionAvailable("Muscle")) {
+  if (!checkFunctionAvailable("Muscle"))
     stop("Muscle is not available via msa!")
-  }
   params <- list(...)
   paramsCopy <- lapply(params, function(x) TRUE)
   params[["inputSeqIsFileFlag"]] <- checkInputSeq(inputSeqs)
@@ -44,18 +800,14 @@ msaMuscleCustom <- function(inputSeqs, cluster = "default", gapOpening = "defaul
   inputSeqs <- transformInputSeq(inputSeqs)
   order <- match.arg(order)
   if (order == "input") {
-    if (params[["inputSeqIsFileFlag"]]) {
-      stop(
-        "msaMuscle does not support order=\"input\" for reading\n",
-        "sequences directly from a FASTA file."
-      )
-    } else if (is.null(names(inputSeqs)) || length(unique(names(inputSeqs))) !=
-      length(inputSeqs)) {
-      warning(
-        "order=\"input\" requires input sequences to be named\n",
-        "uniquely! Assigning default names 'Seq1'..'Seqn'\n",
-        "to sequences."
-      )
+    if (params[["inputSeqIsFileFlag"]])
+      stop("msaMuscle does not support order=\"input\" for reading\n",
+           "sequences directly from a FASTA file.")
+    else if (is.null(names(inputSeqs)) || length(unique(names(inputSeqs))) !=
+             length(inputSeqs)) {
+      warning("order=\"input\" requires input sequences to be named\n",
+              "uniquely! Assigning default names 'Seq1'..'Seqn'\n",
+              "to sequences.")
       names(inputSeqs) <- paste0("Seq", 1:length(inputSeqs))
     }
   }
@@ -63,10 +815,8 @@ msaMuscleCustom <- function(inputSeqs, cluster = "default", gapOpening = "defaul
     cluster <- "upgma"
   }
   else {
-    possibleValues <- c(
-      "upgma", "upgmamax", "upgmamin",
-      "upgmb", "neighborjoining"
-    )
+    possibleValues <- c("upgma", "upgmamax", "upgmamin",
+                        "upgmb", "neighborjoining")
     if (length(cluster) != 1) {
       stop("The parameter cluster contains more than one value!")
     }
@@ -77,59 +827,45 @@ msaMuscleCustom <- function(inputSeqs, cluster = "default", gapOpening = "defaul
     if (!(cluster %in% possibleValues)) {
       text <- ""
       text <- paste(possibleValues, collapse = ", ")
-      stop(
-        "The parameter cluster only can have the values: \n",
-        text
-      )
+      stop("The parameter cluster only can have the values: \n",
+           text)
     }
   }
-  if (is.null(substitutionMatrix) || identical(
-    substitutionMatrix,
-    "default"
-  )) {
+  if (is.null(substitutionMatrix) || identical(substitutionMatrix,
+                                               "default")) {
     substitutionMatrix <- NULL
   }
   if ((!is.null(substitutionMatrix) && !is.matrix(substitutionMatrix)) ||
-    identical(mode(substitutionMatrix), "list")) {
+      identical(mode(substitutionMatrix), "list"))
     stop("The parameter substitutionMatrix should be a matrix!")
-  }
   if (!is.null(substitutionMatrix)) {
-    headerNames <- c(
-      "A", "C", "D", "E", "F", "G", "H", "I",
-      "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V",
-      "W", "Y"
-    )
-    if (type == "protein") {
+    headerNames <- c("A", "C", "D", "E", "F", "G", "H", "I",
+                     "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V",
+                     "W", "Y")
+    if (type == "protein")
       reqNames <- headerNames
-    } else if (type == "dna") {
+    else if (type == "dna")
       reqNames <- c("A", "C", "G", "T")
-    } else {
-      reqNames <- c("A", "C", "G", "U")
-    }
+    else reqNames <- c("A", "C", "G", "U")
     rowPerm <- match(reqNames, rownames(substitutionMatrix))
-    if (any(is.na(rowPerm))) {
+    if (any(is.na(rowPerm)))
       stop("substitutionMatrix does not contain all necessary rows")
-    }
     colPerm <- match(reqNames, colnames(substitutionMatrix))
-    if (any(is.na(colPerm))) {
+    if (any(is.na(colPerm)))
       stop("substitutionMatrix does not contain all necessary columns")
-    }
     substitutionMatrix <- substitutionMatrix[rowPerm, colPerm]
-    if (type == "rna") {
+    if (type == "rna")
       reqNames <- c("A", "C", "G", "T")
-    }
     auxMat <- matrix(0, length(headerNames), length(headerNames))
     rownames(auxMat) <- headerNames
     colnames(auxMat) <- headerNames
     auxMat[reqNames, reqNames] <- substitutionMatrix
     substitutionMatrix <- auxMat
-    if (!isSymmetric(substitutionMatrix)) {
+    if (!isSymmetric(substitutionMatrix))
       stop("substitutionMatrix should be a symmetric matrix!")
-    }
     if (any(is.na(substitutionMatrix)) || any(is.na(substitutionMatrix)) ||
-      any(is.infinite(substitutionMatrix))) {
+        any(is.infinite(substitutionMatrix)))
       stop("substitutionMatrix contains invalid values!")
-    }
     params[["le"]] <- FALSE
     params[["sv"]] <- FALSE
     if (type == "protein") {
@@ -146,123 +882,83 @@ msaMuscleCustom <- function(inputSeqs, cluster = "default", gapOpening = "defaul
     paramsCopy[["spn"]] <- NULL
   }
   if (params$le) {
-    gapOpening <- checkGapOpening2(
-      gapOpening, substitutionMatrix,
-      2.9
-    )
+    gapOpening <- checkGapOpening2(gapOpening, substitutionMatrix,
+                                   2.9)
   }
   else if (params$sp) {
-    gapOpening <- checkGapOpening2(
-      gapOpening, substitutionMatrix,
-      1439
-    )
+    gapOpening <- checkGapOpening2(gapOpening, substitutionMatrix,
+                                   1439)
   }
   else if (params$sv) {
-    gapOpening <- checkGapOpening2(
-      gapOpening, substitutionMatrix,
-      300
-    )
+    gapOpening <- checkGapOpening2(gapOpening, substitutionMatrix,
+                                   300)
   }
   else if (params$spn) {
     if (identical(type, "dna")) {
-      gapOpening <- checkGapOpening2(
-        gapOpening, substitutionMatrix,
-        400
-      )
+      gapOpening <- checkGapOpening2(gapOpening, substitutionMatrix,
+                                     400)
     }
     if (identical(type, "rna")) {
-      gapOpening <- checkGapOpening2(
-        gapOpening, substitutionMatrix,
-        420
-      )
+      gapOpening <- checkGapOpening2(gapOpening, substitutionMatrix,
+                                     420)
     }
     if (identical(type, "protein")) {
-      stop(
-        "If you use sequences of type \"protein\", \n",
-        "you can't use the parameter \"spn\"!"
-      )
+      stop("If you use sequences of type \"protein\", \n",
+           "you can't use the parameter \"spn\"!")
     }
   }
-  gapExtension <- checkGapExtension(
-    gapExtension, type, substitutionMatrix,
-    0, 0
-  )
+  gapExtension <- checkGapExtension(gapExtension, type, substitutionMatrix,
+                                    0, 0)
   maxiters <- checkMaxiters(maxiters, 16, "msaMuscle")
   verbose <- checkVerbose(FALSE, verbose)
-  params[["anchorspacing"]] <- checkIntegerParamsNew(
-    "anchorspacing",
-    params
-  )
+  params[["anchorspacing"]] <- checkIntegerParamsNew("anchorspacing",
+                                                     params)
   paramsCopy[["anchorspacing"]] <- NULL
   params[["center"]] <- checkNumericParamsNew("center", params)
   params[["center"]] <- checkNegativeParams("center", params)
   paramsCopy[["center"]] <- NULL
   posVal <- c("upgma", "upgmamax", "upgmamin", "upgmb", "neighborjoining")
-  params[["cluster1"]] <- checkSingleValParamsNew(
-    "cluster1",
-    params, posVal
-  )
+  params[["cluster1"]] <- checkSingleValParamsNew("cluster1",
+                                                  params, posVal)
   paramsCopy[["cluster1"]] <- NULL
   posVal <- c("upgma", "upgmb", "upgmamax", "upgmamin", "neighborjoining")
-  params[["cluster2"]] <- checkSingleValParamsNew(
-    "cluster2",
-    params, posVal
-  )
+  params[["cluster2"]] <- checkSingleValParamsNew("cluster2",
+                                                  params, posVal)
   paramsCopy[["cluster2"]] <- NULL
-  params[["diagbreak"]] <- checkIntegerParamsNew(
-    "diagbreak",
-    params
-  )
-  params[["diagbreak"]] <- checkPositiveParams(
-    "diagbreak",
-    params
-  )
+  params[["diagbreak"]] <- checkIntegerParamsNew("diagbreak",
+                                                 params)
+  params[["diagbreak"]] <- checkPositiveParams("diagbreak",
+                                               params)
   paramsCopy[["diagbreak"]] <- NULL
-  params[["diaglength"]] <- checkIntegerParamsNew(
-    "diaglength",
-    params
-  )
-  params[["diaglength"]] <- checkPositiveParams(
-    "diaglength",
-    params
-  )
+  params[["diaglength"]] <- checkIntegerParamsNew("diaglength",
+                                                  params)
+  params[["diaglength"]] <- checkPositiveParams("diaglength",
+                                                params)
   paramsCopy[["diaglength"]] <- NULL
-  params[["diagmargin"]] <- checkIntegerParamsNew(
-    "diagmargin",
-    params
-  )
-  params[["diagmargin"]] <- checkPositiveParams(
-    "diagmargin",
-    params
-  )
+  params[["diagmargin"]] <- checkIntegerParamsNew("diagmargin",
+                                                  params)
+  params[["diagmargin"]] <- checkPositiveParams("diagmargin",
+                                                params)
   paramsCopy[["diagmargin"]] <- NULL
   if (type == "protein") {
     posVal <- c("kmer6_6", "kmer20_3", "kmer20_4", "kbit20_3")
   }
   else {
-    posVal <- c(
-      "kmer6_6", "kmer20_3", "kmer20_4", "kbit20_3",
-      "kmer4_6"
-    )
+    posVal <- c("kmer6_6", "kmer20_3", "kmer20_4", "kbit20_3",
+                "kmer4_6")
   }
   if (!is.null(params[["distance1"]])) {
-    params[["distance1"]] <- checkIsValue(
-      "distance1", params,
-      posVal
-    )
+    params[["distance1"]] <- checkIsValue("distance1", params,
+                                          posVal)
   }
   paramsCopy[["distance1"]] <- NULL
-  params[["distance2"]] <- checkSingleValParamsNew(
-    "distance2",
-    params, c("pctidkimura", "pctidlog")
-  )
+  params[["distance2"]] <- checkSingleValParamsNew("distance2",
+                                                   params, c("pctidkimura", "pctidlog"))
   paramsCopy[["distance2"]] <- NULL
   params[["hydro"]] <- checkIntegerParamsNew("hydro", params)
   paramsCopy[["hydro"]] <- NULL
-  params[["hydrofactor"]] <- checkNumericParamsNew(
-    "hydrofactor",
-    params
-  )
+  params[["hydrofactor"]] <- checkNumericParamsNew("hydrofactor",
+                                                   params)
   paramsCopy[["hydrofactor"]] <- NULL
   if (!is.null(params[["in1"]])) {
     checkInFile("in1", params)
@@ -272,138 +968,90 @@ msaMuscleCustom <- function(inputSeqs, cluster = "default", gapOpening = "defaul
     checkInFile("in2", params)
   }
   paramsCopy[["in2"]] <- NULL
-  params[["maxhours"]] <- checkNumericParamsNew(
-    "maxhours",
-    params
-  )
+  params[["maxhours"]] <- checkNumericParamsNew("maxhours",
+                                                params)
   params[["maxhours"]] <- checkPositiveParams("maxhours", params)
   paramsCopy[["maxhours"]] <- NULL
-  params[["maxtrees"]] <- checkIntegerParamsNew(
-    "maxtrees",
-    params
-  )
+  params[["maxtrees"]] <- checkIntegerParamsNew("maxtrees",
+                                                params)
   params[["maxtrees"]] <- checkPositiveParams("maxtrees", params)
   paramsCopy[["maxtrees"]] <- NULL
-  params[["minbestcolscore"]] <- checkNumericParamsNew(
-    "minbestcolscore",
-    params
-  )
+  params[["minbestcolscore"]] <- checkNumericParamsNew("minbestcolscore",
+                                                       params)
   paramsCopy[["minbestcolscore"]] <- NULL
-  params[["minsmoothscore"]] <- checkNumericParamsNew(
-    "minsmoothscore",
-    params
-  )
+  params[["minsmoothscore"]] <- checkNumericParamsNew("minsmoothscore",
+                                                      params)
   paramsCopy[["minsmoothscore"]] <- NULL
   posVal <- c("dp", "ps", "sp", "spf", "spm", "xp")
-  params[["objscore"]] <- checkSingleValParamsNew(
-    "objscore",
-    params, posVal
-  )
+  params[["objscore"]] <- checkSingleValParamsNew("objscore",
+                                                  params, posVal)
   paramsCopy[["objscore"]] <- NULL
-  params[["refinewindow"]] <- checkIntegerParamsNew(
-    "refinewindow",
-    params
-  )
-  params[["refinewindow"]] <- checkPositiveParams(
-    "refinewindow",
-    params
-  )
+  params[["refinewindow"]] <- checkIntegerParamsNew("refinewindow",
+                                                    params)
+  params[["refinewindow"]] <- checkPositiveParams("refinewindow",
+                                                  params)
   paramsCopy[["refinewindow"]] <- NULL
   posVal <- c("pseudo", "midlongestspan", "minavgleafdist")
-  params[["root1"]] <- checkSingleValParamsNew(
-    "root1", params,
-    posVal
-  )
+  params[["root1"]] <- checkSingleValParamsNew("root1", params,
+                                               posVal)
   paramsCopy[["root1"]] <- NULL
   posVal <- c("pseudo", "midlongestspan", "minavgleafdist")
-  params[["root2"]] <- checkSingleValParamsNew(
-    "root2", params,
-    posVal
-  )
+  params[["root2"]] <- checkSingleValParamsNew("root2", params,
+                                               posVal)
   paramsCopy[["root2"]] <- NULL
   checkNumericParamsNew("smoothscoreceil", params)
   paramsCopy[["smoothscoreceil"]] <- NULL
-  params[["smoothwindow"]] <- checkIntegerParamsNew(
-    "smoothwindow",
-    params
-  )
-  params[["smoothwindow"]] <- checkPositiveParams(
-    "smoothwindow",
-    params
-  )
-  if (!is.null(params[["smoothwindow"]]) && params[["smoothwindow"]] %% 2 ==
-    0) {
+  params[["smoothwindow"]] <- checkIntegerParamsNew("smoothwindow",
+                                                    params)
+  params[["smoothwindow"]] <- checkPositiveParams("smoothwindow",
+                                                  params)
+  if (!is.null(params[["smoothwindow"]]) && params[["smoothwindow"]]%%2 ==
+      0) {
     stop("The parameter smoothwindow must be odd!")
   }
   paramsCopy[["smoothwindow"]] <- NULL
   params[["SUEFF"]] <- checkNumericParamsNew("SUEFF", params)
-  params[["SUEFF"]] <- checkIntervalParamsNew(
-    "SUEFF", params,
-    0, 1
-  )
+  params[["SUEFF"]] <- checkIntervalParamsNew("SUEFF", params,
+                                              0, 1)
   paramsCopy[["SUEFF"]] <- NULL
-  posVal <- c(
-    "none", "henikoff", "henikoffpb", "gsc", "clustalw",
-    "threeway"
-  )
-  params[["weight1"]] <- checkSingleValParamsNew(
-    "weight1",
-    params, posVal
-  )
+  posVal <- c("none", "henikoff", "henikoffpb", "gsc", "clustalw",
+              "threeway")
+  params[["weight1"]] <- checkSingleValParamsNew("weight1",
+                                                 params, posVal)
   paramsCopy[["weight1"]] <- NULL
-  posVal <- c(
-    "none", "henikoff", "henikoffpb", "gsc", "clustalw",
-    "threeway"
-  )
-  params[["weight2"]] <- checkSingleValParamsNew(
-    "weight2",
-    params, posVal
-  )
+  posVal <- c("none", "henikoff", "henikoffpb", "gsc", "clustalw",
+              "threeway")
+  params[["weight2"]] <- checkSingleValParamsNew("weight2",
+                                                 params, posVal)
   paramsCopy[["weight2"]] <- NULL
   if (!is.null(params[["anchors"]])) {
-    params[["anchors"]] <- checkLogicalParams(
-      "anchors",
-      params, TRUE
-    )
+    params[["anchors"]] <- checkLogicalParams("anchors",
+                                              params, TRUE)
   }
   paramsCopy[["anchors"]] <- NULL
-  params[["brenner"]] <- checkLogicalParams(
-    "brenner", params,
-    FALSE
-  )
+  params[["brenner"]] <- checkLogicalParams("brenner", params,
+                                            FALSE)
   paramsCopy[["brenner"]] <- NULL
   if (!is.null(params[["core"]])) {
-    params[["core"]] <- checkLogicalParams(
-      "core", params,
-      TRUE
-    )
+    params[["core"]] <- checkLogicalParams("core", params,
+                                           TRUE)
   }
   paramsCopy[["core"]] <- NULL
-  params[["diags"]] <- checkLogicalParams(
-    "diags", params,
-    FALSE
-  )
+  params[["diags"]] <- checkLogicalParams("diags", params,
+                                          FALSE)
   paramsCopy[["diags"]] <- NULL
-  params[["diags1"]] <- checkLogicalParams(
-    "diags1", params,
-    FALSE
-  )
+  params[["diags1"]] <- checkLogicalParams("diags1", params,
+                                           FALSE)
   paramsCopy[["diags1"]] <- NULL
-  params[["diags2"]] <- checkLogicalParams(
-    "diags2", params,
-    FALSE
-  )
+  params[["diags2"]] <- checkLogicalParams("diags2", params,
+                                           FALSE)
   paramsCopy[["diags2"]] <- NULL
-  params[["dimer"]] <- checkLogicalParams(
-    "dimer", params,
-    FALSE
-  )
+  params[["dimer"]] <- checkLogicalParams("dimer", params,
+                                          FALSE)
   paramsCopy[["dimer"]] <- NULL
   paramsCopy[["le"]] <- NULL
-  params[["noanchors"]] <- checkLogicalParams(
-    "noanchors",
-    params, FALSE
-  )
+  params[["noanchors"]] <- checkLogicalParams("noanchors",
+                                              params, FALSE)
   if (!is.null(params[["anchors"]])) {
     if (params[["anchors"]] && params[["noanchors"]]) {
       stop("The parameters anchors and noanchors \n", "can't be positive at the same time!")
@@ -413,10 +1061,8 @@ msaMuscleCustom <- function(inputSeqs, cluster = "default", gapOpening = "defaul
     }
   }
   paramsCopy[["noanchors"]] <- NULL
-  params[["nocore"]] <- checkLogicalParams(
-    "nocore", params,
-    FALSE
-  )
+  params[["nocore"]] <- checkLogicalParams("nocore", params,
+                                           FALSE)
   if (!is.null(params[["core"]])) {
     if (params[["core"]] && params[["nocore"]]) {
       stop("The parameters core and nocore \n", "can't be positive at the same time!")
@@ -426,57 +1072,40 @@ msaMuscleCustom <- function(inputSeqs, cluster = "default", gapOpening = "defaul
     }
   }
   paramsCopy[["nocore"]] <- NULL
-  params[["profile"]] <- checkLogicalParams(
-    "profile", params,
-    FALSE
-  )
+  params[["profile"]] <- checkLogicalParams("profile", params,
+                                            FALSE)
   if (params[["profile"]]) {
     if (is.null(params[["in1"]]) || is.null(params[["in2"]])) {
-      stop(
-        "The parameter profile needs the following parameters: \n",
-        "in1 and in2!"
-      )
+      stop("The parameter profile needs the following parameters: \n",
+           "in1 and in2!")
     }
   }
   paramsCopy[["profile"]] <- NULL
-  params[["refine"]] <- checkLogicalParams(
-    "refine", params,
-    FALSE
-  )
+  params[["refine"]] <- checkLogicalParams("refine", params,
+                                           FALSE)
   paramsCopy[["refine"]] <- NULL
-  params[["refinew"]] <- checkLogicalParams(
-    "refinew", params,
-    FALSE
-  )
+  params[["refinew"]] <- checkLogicalParams("refinew", params,
+                                            FALSE)
   paramsCopy[["refinew"]] <- NULL
   paramsCopy[["sp"]] <- NULL
   paramsCopy[["spn"]] <- NULL
-  params[["spscore"]] <- checkLogicalParams(
-    "spscore", params,
-    FALSE
-  )
+  params[["spscore"]] <- checkLogicalParams("spscore", params,
+                                            FALSE)
   paramsCopy[["spscore"]] <- NULL
   paramsCopy[["sv"]] <- NULL
-  params[["version"]] <- checkLogicalParams(
-    "version", params,
-    FALSE
-  )
+  params[["version"]] <- checkLogicalParams("version", params,
+                                            FALSE)
   paramsCopy[["version"]] <- NULL
   if (length(paramsCopy) != 0) {
-    stop(
-      "The following parameters are not known  \n", "(or have been specified",
-      "more often than once):\n    ", paste(names(paramsCopy),
-        collapse = ", ", sep = ""
-      )
-    )
+    stop("The following parameters are not known  \n", "(or have been specified",
+         "more often than once):\n    ", paste(names(paramsCopy),
+                                               collapse = ", ", sep = ""))
   }
   inputSeqNames <- names(inputSeqs)
   names(inputSeqs) <- paste0("Seq", 1:length(inputSeqs))
   result <- .Call("RMuscle", inputSeqs, cluster, -abs(gapOpening),
-    -abs(gapExtension), maxiters, substitutionMatrix, type,
-    verbose, params,
-    PACKAGE = "msa"
-  )
+                  -abs(gapExtension), maxiters, substitutionMatrix, type,
+                  verbose, params, PACKAGE = "msa")
   out <- convertAlnRows(result$msa, type)
   if (length(inputSeqNames) > 0) {
     if (order == "aligned") {
@@ -489,13 +1118,9 @@ msaMuscleCustom <- function(inputSeqs, cluster = "default", gapOpening = "defaul
       names(out@unmasked) <- inputSeqNames
     }
   }
-  else {
-    names(out@unmasked) <- NULL
-  }
-  standardParams <- list(
-    gapOpening = gapOpening, gapExtension = gapExtension,
-    maxiters = maxiters, verbose = verbose
-  )
+  else names(out@unmasked) <- NULL
+  standardParams <- list(gapOpening = gapOpening, gapExtension = gapExtension,
+                         maxiters = maxiters, verbose = verbose)
   out@params <- c(standardParams, params)
   out@call <- deparse(sys.call())
   out
