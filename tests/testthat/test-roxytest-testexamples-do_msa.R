@@ -2,9 +2,10 @@
 
 context("File R/do_msa.R: @testexamples")
 
-test_that("Function do_msa() @ L18", {
+test_that("Function do_msa() @ L19", {
   
   r <- do_msa(c("ABCDF", "BCDEF"))
+  r
   expect_is(r, "list")
 })
 

@@ -13,12 +13,13 @@
 #'
 #' @examples
 #' r <- do_msa(c("ABCDF", "BCDEF"))
+#' r
 #' @testexamples
 #' expect_is(r, "list")
 do_msa <- function(x, substitutionMatrix = NULL,
                    gapOpening = 6,
                    gapExtension = 1,
-                   verbose = TRUE, ...) {
+                   verbose = FALSE, ...) {
 
   if (is.null(substitutionMatrix)) {
     substitutionMatrix <- matrix(0, nrow = 6, ncol = 6,

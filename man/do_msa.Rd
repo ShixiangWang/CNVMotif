@@ -9,7 +9,7 @@ do_msa(
   substitutionMatrix = NULL,
   gapOpening = 6,
   gapExtension = 1,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 }
@@ -35,4 +35,5 @@ Run Modified Multiple Sequence Alignment
 }
 \examples{
 r <- do_msa(c("ABCDF", "BCDEF"))
+r
 }
