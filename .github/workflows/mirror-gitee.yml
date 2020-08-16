@@ -13,5 +13,5 @@ jobs:
         dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
         dst_token: ${{ secrets.GITEE_TOKEN }}
         account_type: user
-        static_list: 'sigminer,CNVMotif,sigminer.workflow'
+        static_list: 'sigminer,CNVMotif,sigminer.workflow,tinyscholar'
         force_update: true
