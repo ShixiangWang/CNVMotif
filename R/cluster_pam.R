@@ -51,7 +51,8 @@ cluster_pam_estimate <- function(x,
       clust <- FUNcluster(x, i, diss = TRUE, ...)
       v[i] <- .get_ave_sil_width(diss, clust$cluster)
       if (clean_memory) {
-        rm(clust); gc(verbose = FALSE)
+        rm(clust)
+        gc(verbose = FALSE)
       }
     }
   } else if (method == "wss") {
@@ -60,7 +61,8 @@ cluster_pam_estimate <- function(x,
       clust <- FUNcluster(x, i, diss = TRUE, ...)
       v[i] <- .get_withinSS(diss, clust$cluster)
       if (clean_memory) {
-        rm(clust); gc(verbose = FALSE)
+        rm(clust)
+        gc(verbose = FALSE)
       }
     }
   }
@@ -74,9 +76,9 @@ cluster_pam_estimate <- function(x,
     ylab <- "Average silhouette width"
   }
   p <- ggpubr::ggline(df,
-                      x = "clusters", y = "y", group = 1,
-                      color = linecolor, ylab = ylab, xlab = "Number of clusters k",
-                      main = "Estimation of cluster number"
+    x = "clusters", y = "y", group = 1,
+    color = linecolor, ylab = ylab, xlab = "Number of clusters k",
+    main = "Estimation of cluster number"
   )
 
   message("Done.")

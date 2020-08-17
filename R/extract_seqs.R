@@ -35,7 +35,6 @@ extract_seqs <- function(dt, len = 5L, step = 1L, local_cutoff = 1e7,
     } else {
       return(sort(unique(dt$Seqs)))
     }
-
   } else {
     message("Task: extract specified-size sequences with input 'len' and 'step' under segment size cutoff.")
     dt$too_large <- (dt$end - dt$start + 1L) >= local_cutoff
@@ -43,7 +42,8 @@ extract_seqs <- function(dt, len = 5L, step = 1L, local_cutoff = 1e7,
     message("Fraction: ", round(sum(dt$too_large) / nrow(dt), digits = 3))
     dt <- dt[, c("ID", "Seqs", "too_large")]
     dt <- dt[, list(Seqs = collapse_shift_seqs2(Seqs, too_large, len = len, step = step)),
-             by = "ID"]
+      by = "ID"
+    ]
 
     if (return_dt) {
       return(dt)
@@ -102,9 +102,9 @@ collapse_local_seqs <- function(x, too_large, segsize, cutoff = 1e7) {
     # Loop both segment copy number value and its length
     purrr::map2(z_list, zL_list, function(x, y, cutoff) {
       z <- getLocalSubstr(x, y, cutoff)
-      z <- setdiff(z, "")  # Remove blank string
+      z <- setdiff(z, "") # Remove blank string
       z
     }, cutoff = cutoff) %>% purrr::flatten_chr()
-    #return(sapply(z_list, paste, collapse = "") %>% unlist() %>% as.character())
+    # return(sapply(z_list, paste, collapse = "") %>% unlist() %>% as.character())
   }
 }

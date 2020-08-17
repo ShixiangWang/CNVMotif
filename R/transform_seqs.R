@@ -43,9 +43,9 @@ transform_seqs <- function(x, simple_version = FALSE, max_len_score = 4L) {
   x[, segVal := ifelse(segVal > 5, 5, segVal) %>% as.integer()]
   if (isFALSE(simple_version)) {
     x[, lenVal := cut(end - start + 1L,
-                      breaks = c(-Inf, 5e4, 5e5, 5e6, Inf),
-                      labels = c("1", "2", "3", "4"),
-                      right = FALSE
+      breaks = c(-Inf, 5e4, 5e5, 5e6, Inf),
+      labels = c("1", "2", "3", "4"),
+      right = FALSE
     ) %>% as.integer()]
   }
 

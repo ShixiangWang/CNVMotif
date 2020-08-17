@@ -89,7 +89,6 @@ get_score_matrix <- function(x, sub_mat = NULL,
     y <- ifelse(y > 0, 2^(y - 1), 0)
 
     rownames(y) <- colnames(y) <- x
-
   } else {
     message("Task: score equal-size paired strings with substitution matrix.")
     if (anyNA(sub_mat)) {

@@ -17,8 +17,8 @@ chunk2 <- function(x, n) split(x, cut(seq_along(x), n, labels = FALSE))
 # Call un-exported functions from other packages
 get_fun <- function(pkg, fun) {
   get(fun,
-      envir = asNamespace(pkg),
-      inherits = FALSE
+    envir = asNamespace(pkg),
+    inherits = FALSE
   )
 }
 
