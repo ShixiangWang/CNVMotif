@@ -7,7 +7,7 @@
 #'
 #' @return a `list`.
 #' @export
-sh_cluster_split <- function(x, s = NULL, block_size = 10) {
+cluster_split <- function(x, s = NULL, block_size = 10) {
   if (startsWith(x[1], "block")) {
     cluster_blocks <- x
     dt <- dplyr::tibble(
