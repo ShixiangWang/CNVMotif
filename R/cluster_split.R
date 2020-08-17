@@ -8,7 +8,7 @@
 #' @return a `list`.
 #' @export
 cluster_split <- function(x, s = NULL, block_size = 10) {
-  if (as.character(startsWith(x[1]), "block")) {
+  if (startsWith(as.character(x[1]), "block")) {
     cluster_blocks <- x
     dt <- dplyr::tibble(
       block = names(cluster_blocks),
