@@ -35,7 +35,6 @@ Suggests:
     testthat
 LinkingTo: 
     Rcpp
-remotes: ShixiangWang/ggmsa
 biocViews:
 Encoding: UTF-8
 LazyData: true
